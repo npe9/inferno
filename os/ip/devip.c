@@ -979,6 +979,12 @@ Fsstdannounce(Conv* c, char* argv[], int argc)
 	switch(argc){
 	default:
 		return "bad args to announce";
+	case 1:
+                /* if no arguments, default to announce 0 */
+		/* but only if we haven't bound the port already */
+		if(!c->lport)
+			setlport(c);
+		break;
 	case 2:
 		return setladdrport(c, argv[1], 1);
 	}

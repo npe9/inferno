@@ -767,6 +767,12 @@ announcectlmsg(Proto *x, Conv *c, Cmdbuf *cb)
 	switch(cb->nf){
 	default:
 		error("bad args to announce");
+	case 1:
+		/* if no arguments, default to announce 0 */
+		/* but only if we haven't bound the port already */
+		if(!c->lport)
+			setlport(c);
+		break;
 	case 2:
 		setladdrport(c, cb->f[1], 1);
 		break;
