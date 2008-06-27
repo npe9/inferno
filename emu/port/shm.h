@@ -10,40 +10,6 @@ enum
 	Shmaddrlen = 255,
 };
 
-struct Conv
-{
-	QLock	l;
-
-	int		x;	/* conversation index */
-	Proto*	p;
-
-	char	laddr[Shmaddrlen];	/* local IP address */
-	char	raddr[Shmaddrlen];	/* remote IP address */
-	
-	ulong	lport;	/* local port number */
-	ulong	rport;	/* remote port number */
-
-	char*	owner;	/* protections */
-	int		perm;
-	int		inuse;	/* opens of listen/data/ctl */
-	int		state;
-
-	char	cerr[ERRMAX];
-
-	QLock	listenq;
-
-	void*	ptcl;	/* protocol specific stuff */
-
-	QLock	wlock;	/* prevent data from being split by concurrent writes */
-
-	int bufsize;
-	int	mode;		/* 0 for server, 1 for client */
-	void *raw;			/* shared memory handle */
-	void *chan;		/* pointer to channel structure in raw */
-	int	parent;		/* pointer to parent conv */
-	int datapoll;		/* poll interval for data */
-};
-
 struct Shmops 
 {
 	int (*connect)(Conv*);
@@ -76,11 +42,51 @@ struct Proto
 	void*	priv;
 };
 
+struct Conv
+{
+	QLock	l;
+
+	int		x;	/* conversation index */
+	struct Proto*	p;
+
+	char	laddr[Shmaddrlen];	/* local IP address */
+	char	raddr[Shmaddrlen];	/* remote IP address */
+	
+	ulong	lport;	/* local port number */
+	ulong	rport;	/* remote port number */
+
+	char*	owner;	/* protections */
+	int		perm;
+	int		inuse;	/* opens of listen/data/ctl */
+	int		state;
+
+	char	cerr[ERRMAX];
+
+	QLock	listenq;
+
+	void*	ptcl;	/* protocol specific stuff */
+
+	QLock	wlock;	/* prevent data from being split by concurrent writes */
+
+	int bufsize;
+	int	mode;		/* 0 for server, 1 for client */
+	void *raw;			/* shared memory handle */
+	void *chan;		/* pointer to channel structure in raw */
+	void *priv;			/* private data */
+	int	parent;		/* pointer to parent conv */
+	int datapoll;		/* poll interval for data */
+};
+
+
 enum 
 {
-	S_USM=	1,
-	S_XEN=	2,
-	S_RHYPE=3,
+	S_USM=	1,		/* Sys V shared memory */
+	S_MSM=	2,		/* mmap */
+	S_XEN=	3,		/* xen shared memory */
+	S_PAPR=4,		/* FUTURE: power virtualization */
+	S_KVM=	5,		/* FUTURE: KVM shared memory */
+	S_PPE=	6,		/* FUTURE: Cell */
+	S_PCI=	7,		/* FUTURE: PCI bus */
 
 	SM_SERVER=	0,
 	SM_CLIENT=	1,
@@ -104,7 +110,6 @@ struct chan
 	__u32 read; 
 	__u32 overflow;
 	__u32 buflen;
-	char *buf;			/* pointer to buffer area */
 };
 
 enum {

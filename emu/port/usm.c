@@ -57,10 +57,8 @@ usmconnect(Conv *c)
 		chan->out.write = 0;
 		chan->out.read = 0;
 		chan->out.overflow = 0;
-		chan->out.buf = chan->buffers;
 		chan->in.magic = CHAN_BUF_MAGIC;
 		chan->in.buflen = c->bufsize;
-		chan->in.buf = chan->buffers+c->bufsize;
 		chan->in.write = 0;
 		chan->in.read = 0;
 		chan->in.overflow = 0;
@@ -109,6 +107,6 @@ struct Shmops usmop = {
 void
 usmlink(void)
 {
-	shminit();
-	shmnewproto("usm", S_USM, 8, &usmop);
+	devshminit();
+	devshmnewproto("usm", S_USM, 8, &usmop);
 }

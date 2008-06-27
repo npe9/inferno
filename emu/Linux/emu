@@ -41,6 +41,7 @@ lib
 
 link
 	usm
+	msm
 
 mod
 	sys

@@ -7,7 +7,7 @@
 #include	"fns.h"
 #include	"error.h"
 #include 	"ip.h"
-#include   	"shm.h"
+#include   "shm.h"
 
 #include	<sys/types.h>
 #include	<sys/shm.h>
@@ -64,7 +64,7 @@ get_write_chunk(const Channel *h, char *buf, __u32 bufsize, __u32 *len)
 	__u32 write_avail = CIRCULAR(((h->read - 1) - h->write), bufsize);
 	*len = ((h->write + write_avail) <= bufsize) ?
 		write_avail : (bufsize - h->write);
-	return buf + h->write;
+	return buf + h->write; 
 }
 
 static const char *
@@ -73,7 +73,7 @@ get_read_chunk(const Channel *h, const char *buf, __u32 bufsize, __u32 *len)
 	__u32 read_avail = CIRCULAR((h->write - h->read), bufsize);
        	*len = ((h->read + read_avail) <= bufsize) ?
 		read_avail : (bufsize - h->read);
-	return buf + h->read;
+	return buf + h->read; 
 }
 
 static void 
@@ -99,11 +99,14 @@ shmwrite(struct Conv *conv, void *src, unsigned long len)
 {
 	int ret = 0;
 	struct chan_pipe *p = (struct chan_pipe *)conv->chan;
-	Channel *c = &p->in;
+	Channel *c = &p->out;
+	int bufoff = 0;
 	__u32 bufsize = c->buflen;
 
-	if(conv->mode == SM_CLIENT)
-		c = &p->out;
+	if(conv->mode != SM_CLIENT) {
+		c = &p->in;
+		bufoff = c->buflen;
+	}
 
 	while (!check_write_buffer(c, bufsize)) {
 		yield(conv->datapoll);
@@ -111,7 +114,7 @@ shmwrite(struct Conv *conv, void *src, unsigned long len)
 
         while (len > 0) {
 		__u32 thislen;
-		char *dst = get_write_chunk(c, c->buf, bufsize, &thislen);
+		char *dst = get_write_chunk(c, p->buffers+bufoff, bufsize, &thislen); 
 
 		if (thislen == 0) {
 			yield(conv->datapoll);
@@ -121,7 +124,6 @@ shmwrite(struct Conv *conv, void *src, unsigned long len)
 		if (thislen > len)
 			thislen = len;
 		memcpy(dst, src, thislen);
-		mb();
 		update_write_chunk(c, bufsize, thislen);
 		src += thislen;
 		len -= thislen;
@@ -132,16 +134,21 @@ shmwrite(struct Conv *conv, void *src, unsigned long len)
 	return ret;
 }
 
+
+
 int 
 shmread(struct Conv *conv, void *dst,  unsigned long len)
 {
 	int ret = 0;
 	struct chan_pipe *p = (struct chan_pipe *)conv->chan;
 	Channel *c = &p->out;
+	int bufoff = 0;
 	__u32 bufsize = c->buflen;
 
-	if(conv->mode == SM_CLIENT)
+	if(conv->mode == SM_CLIENT) {
 		c = &p->in;
+		bufoff = c->buflen;
+	}
 
 	while (!check_read_buffer(c, bufsize)) {
 		if(p->state == Hungup)
@@ -152,9 +159,7 @@ shmread(struct Conv *conv, void *dst,  unsigned long len)
 	while (len > 0) {
 		__u32 thislen;
 		const char *src;
-
-		src = get_read_chunk(c, c->buf, bufsize, &thislen);
-
+		src = get_read_chunk(c, p->buffers+bufoff, bufsize, &thislen); 
 		if (thislen == 0) {
 			if(p->state == Hungup)
 				return 0;
@@ -164,8 +169,8 @@ shmread(struct Conv *conv, void *dst,  unsigned long len)
 		if (thislen > len) 
 			thislen = len;
 		memcpy(dst, src, thislen);
-		mb();
 		update_read_chunk(c, bufsize, thislen);
+		
 		dst += thislen;
 		len -= thislen;
 		ret += thislen;
@@ -181,10 +186,10 @@ shmdebug(struct Conv *c, void *buf, unsigned long len)
 {
 	int ret;
 	struct chan_pipe *chan = (struct chan_pipe *) c->chan;
-	ret = sprint(buf, "Magic: %x\nOut\n Out.Magic: %x\n Out.buflen: %x\n Out.write: %x\n Out.read: %x\n Out.over: %x\nIn\n In.Magic: %x\n In.buflen: %x\n In.write: %x\n In.read: %x\n In.over: %x\n",
+	ret = sprint(buf, "Magic: %ux\nOut\n Out.Magic: %ux\n Out.buflen: %ux\n Out.write: %ux\n Out.read: %ux\n Out.over: %ux\nIn\n In.Magic: %ux\n In.buflen: %ux\n In.write: %ux\n In.read: %ux\n In.over: %ux\nIn.buf:%ux\nOut.buf:%ux\nBuf:%ux\n",
 		chan->magic, chan->out.magic, chan->out.buflen, chan->out.write, chan->out.read, 
 		chan->out.overflow, chan->in.magic, chan->in.buflen, chan->in.write, chan->in.read,
-		chan->in.overflow);
+		chan->in.overflow, chan->buffers+chan->in.buflen, chan->buffers+0, chan->buffers);
 	return ret;
 }
 

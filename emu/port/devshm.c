@@ -230,7 +230,7 @@ ipgen(Chan *c, char *name, Dirtab *tab, int x, int s, Dir *dp)
 }
 
 void
-shmnewproto(char *name, int type, int maxconv, struct Shmops *op)
+devshmnewproto(char *name, int type, int maxconv, struct Shmops *op)
 {
 	Proto *p;
 
@@ -248,11 +248,11 @@ shmnewproto(char *name, int type, int maxconv, struct Shmops *op)
 	p->op.listen = op->listen;
 
 	if(Shmproto(ipfs[0], p))
-		panic("can't shmnewproto %s", name);
+		panic("can't devshmnewproto %s", name);
 }
 
 void
-shminit(void)
+devshminit(void)
 {
 	if(!ipfs_init) {
 		ipfs_init++;
@@ -263,7 +263,7 @@ shminit(void)
 }
 
 Chan *
-shmattach(char *spec)
+devshmattach(char *spec)
 {
 	Chan *c;
 
@@ -278,13 +278,13 @@ shmattach(char *spec)
 }
 
 static Walkqid*
-shmwalk(Chan* c, Chan *nc, char **name, int nname)
+devshmwalk(Chan* c, Chan *nc, char **name, int nname)
 {
 	return devwalk(c, nc, name, nname, nil, 0, ipgen);
 }
 
 static int
-shmstat(Chan *c, uchar *db, int n)
+devshmstat(Chan *c, uchar *db, int n)
 {
 	return devstat(c, db, n, 0, 0, ipgen);
 }
@@ -296,7 +296,7 @@ static int m2p[] = {
 };
 
 static Chan *
-shmopen(Chan *c, int omode)
+devshmopen(Chan *c, int omode)
 {
 	Conv *cv, *nc;
 	Proto *p;
@@ -428,7 +428,7 @@ closeconv(Conv *cv)
 }
 
 static void
-shmclose(Chan *c)
+devshmclose(Chan *c)
 {
 	Fs *f;
 
@@ -443,7 +443,7 @@ shmclose(Chan *c)
 }
 
 static long
-shmread(Chan *ch, void *a, long n, vlong off)
+devshmread(Chan *ch, void *a, long n, vlong off)
 {
 	int r;
 	Conv *c;
@@ -491,7 +491,6 @@ shmread(Chan *ch, void *a, long n, vlong off)
 	case Qdata:
 		x = f->p[PROTO(ch->qid)];
 		c = x->conv[CONV(ch->qid)];
-
 		r = x->op.read(c, a, n);
 		if(r < 0)
 			oserror();
@@ -633,9 +632,12 @@ connectctlmsg(Proto *x, Conv *c, Cmdbuf *cb)
 	if( x->op.connect(c) < 0) {
 		error("Could not connect");
 	} else {
+
 		qlock(&c->l);
+
 		poperror();
 		setladdr(c);
+
 		c->state = Connected;
 	}
 }
@@ -678,7 +680,7 @@ bindctlmsg(Proto *x, Conv *c, Cmdbuf *cb)
 }
 
 static long
-shmwrite(Chan *ch, void *a, long n, vlong off)
+devshmwrite(Chan *ch, void *a, long n, vlong off)
 {
 	Conv *c;
 	Proto *x;
@@ -700,7 +702,6 @@ shmwrite(Chan *ch, void *a, long n, vlong off)
 			qunlock(&c->wlock);
 			nexterror();
 		}
-
 		n = x->op.write(c, a, n);
 		poperror();
 		qunlock(&c->wlock);
@@ -775,7 +776,7 @@ shmwrite(Chan *ch, void *a, long n, vlong off)
 }
 
 static int
-shmwstat(Chan *c, uchar *dp, int n)
+devshmwstat(Chan *c, uchar *dp, int n)
 {
 	Dir *d;
 	Conv *cv;
@@ -904,19 +905,19 @@ Dev shmdevtab = {
 	'X',
 	"shm",
 
-	shminit,
-	shmattach,
-	shmwalk,
-	shmstat,
-	shmopen,
+	devshminit,
+	devshmattach,
+	devshmwalk,
+	devshmstat,
+	devshmopen,
 	devcreate,
-	shmclose,
-	shmread,
+	devshmclose,
+	devshmread,
 	devbread,
-	shmwrite,
+	devshmwrite,
 	devbwrite,
 	devremove,
-	shmwstat
+	devshmwstat
 };
 
 int
