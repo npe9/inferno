@@ -1363,7 +1363,7 @@ fatal(char *fmt, ...)
 }
 
 int
-gfltconv(Fmt *f)
+_gfltconv(Fmt *f)
 {
 	double d;
 	char buf[32];

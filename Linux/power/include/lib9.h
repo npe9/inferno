@@ -5,6 +5,8 @@
 #define _LARGEFILE_SOURCE	1
 #define _LARGEFILE64_SOURCE	1
 #define _FILE_OFFSET_BITS 64
+#define __USE_FILE_OFFSET64
+#define __USE_LARGEFILE64
 #include <features.h>
 #include <sys/types.h>
 #include <stdlib.h>
@@ -29,8 +31,13 @@ typedef struct Proc Proc;
 
 /*
  * math module dtoa
+ *
+ */
+/* this probably isn't true on power
  * #define __LITTLE_ENDIAN /usr/include/endian.h under linux
  */
+
+#include <endian.h>
 
 #define	nil		((void*)0)
 
@@ -226,7 +233,8 @@ extern	ulong	ntruerand(ulong);
  */
 extern	int	isNaN(double);
 extern	int	isInf(double, int);
-#define	gfltconv _gfltconv
+extern	int	_efgfmt(Fmt *f);
+#define gfltconv _efgfmt
 
 /*
  * Time-of-day
@@ -247,7 +255,7 @@ struct Tm {
 };
 extern	vlong	osnsec(void);
 #define	nsec	osnsec
-	
+
 /*
  * one-of-a-kind
  */
@@ -463,7 +471,7 @@ extern char *argv0;
 typedef struct FPU FPU;
 struct FPU
 {
-	uchar	env[28];
+	uchar	env[256];
 };
 
 /*
@@ -473,17 +481,23 @@ struct FPU
  */
 #define KSTACK (16 * 1024)
 
+#ifdef EMU
 static __inline Proc *getup(void) {
 	Proc *p;
-	__asm__(	"movl	%%esp, %%eax\n\t"
-			: "=a" (p)
-	);
+	__asm__(	"mr	%0, 1" : "=r" (p));
 	return *(Proc **)((unsigned long)p & ~(KSTACK - 1));
 };
 
 #define	up	(getup())
+#endif
 
 typedef sigjmp_buf osjmpbuf;
 #define	ossetjmp(buf)	sigsetjmp(buf, 1)
 
+#endif
+#ifdef va_copy
+#       define VA_COPY(a,b) va_copy(a,b)
+#       define VA_END(a) va_end(a)
+#else
+	you suck
 #endif

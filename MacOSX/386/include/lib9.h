@@ -245,6 +245,7 @@ extern	ulong	ntruerand(ulong);
 extern	int	isNaN(double);
 extern	int	isInf(double, int);
 extern	double	pow(double, double);
+#define gfltconv _gfltconv
 
 /*
  * Time-of-day

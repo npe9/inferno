@@ -402,7 +402,8 @@ fsread(Chan *c, void *va, long n, vlong offset)
 		poperror();
 		qunlock(&FS(c)->oq);
 	}else{
-		r = pread(FS(c)->fd, va, n, offset);
+		r = pread64(FS(c)->fd, va, n, offset);
+
 		if(r < 0 && (errno == ESPIPE || errno == EPIPE)){
 			r = read(FS(c)->fd, va, n);
 			if(r < 0)
@@ -417,7 +418,7 @@ fswrite(Chan *c, void *va, long n, vlong offset)
 {
 	long r;
 
-	r = pwrite(FS(c)->fd, va, n, offset);
+	r = pwrite64(FS(c)->fd, va, n, offset);
 	if(r < 0 && (errno == ESPIPE || errno == EPIPE)){
 		r = write(FS(c)->fd, va, n);
 		if(r < 0)
