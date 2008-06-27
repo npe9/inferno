@@ -90,3 +90,44 @@ enum
 };
 
 void shmnewproto(char *, int, int, struct Shmops *);
+
+/* generic shared memory bits */
+
+typedef unsigned int __u32;
+typedef unsigned char __u8;
+
+typedef struct chan Channel;
+struct chan
+{
+	__u32 magic;
+	__u32 write; 
+	__u32 read; 
+	__u32 overflow;
+	__u32 buflen;
+	char *buf;			/* pointer to buffer area */
+};
+
+enum {
+	Chan_listen,
+	Chan_connected,
+	Chan_hungup
+};
+
+/* Two circular buffers: small one for input, large one for output. */
+struct chan_pipe
+{
+	__u32 magic;
+	int state;
+	Channel out;
+	Channel in;
+	char buffers[0];
+};
+
+#define CHUNK_SIZE	(64<<20)
+#define CHAN_MAGIC		0xB0BABEEF
+#define CHAN_BUF_MAGIC	0xCAFEBABE
+
+int  shmwrite(struct Conv *conv, void *src, unsigned long len);
+int  shmread(struct Conv *conv, void *dst,  unsigned long len);
+int shmdebug(struct Conv *c, void *buf, unsigned long len);
+int shmlisten(struct Conv *c);

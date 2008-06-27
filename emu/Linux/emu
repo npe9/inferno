@@ -19,7 +19,7 @@ dev
 	snarf
 
 	ip	ipif-posix ipaux
-	shm
+	shm		shm
 	eia
 #	audio	audio
 	mem
@@ -40,7 +40,7 @@ lib
 	9
 
 link
-	shm
+	usm
 
 mod
 	sys
