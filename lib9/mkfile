@@ -40,7 +40,6 @@ IMPORTFILES=\
 	fmtrune.$O\
 	fmtstr.$O\
 	fmtvprint.$O\
-	fltfmt.$O\
 	fprint.$O\
 	getfields.$O\
 	nulldir.$O\

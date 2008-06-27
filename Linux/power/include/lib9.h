@@ -33,24 +33,20 @@ typedef struct Proc Proc;
  * math module dtoa
  *
  */
-/* this probably isn't true on power
- * #define __LITTLE_ENDIAN /usr/include/endian.h under linux
- */
-
-#include <endian.h>
+#undef __LITTLE_ENDIAN
 
 #define	nil		((void*)0)
 
-typedef unsigned char	uchar;
-typedef signed char	schar;
-typedef unsigned short	Rune;
-typedef long long int	vlong;
+typedef unsigned char		uchar;
+typedef signed char		schar;
+typedef unsigned short		Rune;
+typedef long long int		vlong;
 typedef unsigned long long int	uvlong;
-typedef unsigned int u32int;
-typedef unsigned int	mpdigit;	/* for /sys/include/mp.h */
-typedef unsigned short u16int;
-typedef unsigned char u8int;
-typedef unsigned long uintptr;
+typedef unsigned int 		u32int;
+typedef unsigned int		mpdigit;	/* for /sys/include/mp.h */
+typedef unsigned short 		u16int;
+typedef unsigned char 		u8int;
+typedef unsigned long 		uintptr;
 
 #define	USED(x)		if(x){}else{}
 #define	SET(x)
@@ -75,10 +71,10 @@ extern	int	tokenize(char*, char**, int);
 
 enum
 {
-	UTFmax		= 3,		/* maximum bytes per rune */
-	Runesync	= 0x80,		/* cannot represent part of a UTF sequence (<) */
-	Runeself	= 0x80,		/* rune and UTF sequences are the same (<) */
-	Runeerror	= 0x80		/* decoding error in UTF */
+	UTFmax		= 3,	/* maximum bytes per rune */
+	Runesync	= 0x80,	/* cannot represent part of a UTF sequence(<) */
+	Runeself	= 0x80,	/* rune and UTF sequences are the same (<) */
+	Runeerror	= 0x80	/* decoding error in UTF */
 };
 
 /*
@@ -127,8 +123,8 @@ extern	void	free(void*);
 extern	ulong	msize(void*);
 extern	void*	calloc(size_t, size_t);
 extern	void*	realloc(void*, size_t);
-extern	void		setmalloctag(void*, ulong);
-extern	void		setrealloctag(void*, ulong);
+extern	void	setmalloctag(void*, ulong);
+extern	void	setrealloctag(void*, ulong);
 extern	ulong	getmalloctag(void*);
 extern	ulong	getrealloctag(void*);
 extern	void*	malloctopoolblock(void*);
@@ -138,15 +134,15 @@ extern	void*	malloctopoolblock(void*);
  */
 typedef struct Fmt	Fmt;
 struct Fmt{
-	uchar	runes;			/* output buffer is runes or chars? */
-	void	*start;			/* of buffer */
-	void	*to;			/* current place in the buffer */
-	void	*stop;			/* end of the buffer; overwritten if flush fails */
-	int	(*flush)(Fmt *);	/* called when to == stop */
-	void	*farg;			/* to make flush a closure */
-	int	nfmt;			/* num chars formatted so far */
-	va_list	args;			/* args passed to dofmt */
-	int	r;			/* % format Rune */
+	uchar	runes;		/* output buffer is runes or chars? */
+	void	*start;		/* of buffer */
+	void	*to;		/* current place in the buffer */
+	void	*stop;		/* end of the buffer; overwritten if flush fails */
+	int	(*flush)(Fmt *);/* called when to == stop */
+	void	*farg;		/* to make flush a closure */
+	int	nfmt;		/* num chars formatted so far */
+	va_list	args;		/* args passed to dofmt */
+	int	r;		/* % format Rune */
 	int	width;
 	int	prec;
 	ulong	flags;
@@ -233,8 +229,6 @@ extern	ulong	ntruerand(ulong);
  */
 extern	int	isNaN(double);
 extern	int	isInf(double, int);
-extern	int	_efgfmt(Fmt *f);
-#define gfltconv _efgfmt
 
 /*
  * Time-of-day
@@ -471,7 +465,7 @@ extern char *argv0;
 typedef struct FPU FPU;
 struct FPU
 {
-	uchar	env[256];
+	uchar	env[18*8];
 };
 
 /*
@@ -495,9 +489,4 @@ typedef sigjmp_buf osjmpbuf;
 #define	ossetjmp(buf)	sigsetjmp(buf, 1)
 
 #endif
-#ifdef va_copy
-#       define VA_COPY(a,b) va_copy(a,b)
-#       define VA_END(a) va_end(a)
-#else
-	you suck
-#endif
+

@@ -194,8 +194,6 @@ extern	int	fmtrunestrcpy(Fmt*, Rune*);
  */
 extern	int	errfmt(Fmt *f);
 
-#define	gfltconv _gfltconv
-
 /*
  * quoted strings
  */

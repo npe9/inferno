@@ -13,7 +13,7 @@ enum
 };
 
 int
-_gfltconv(Fmt *f)
+gfltconv(Fmt *f)
 {
 	int flags = f->flags;
 	int precision;

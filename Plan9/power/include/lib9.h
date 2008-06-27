@@ -283,8 +283,6 @@ extern	double	fmod(double, double);
 #define	PIO2	1.570796326794896619231e0
 #define	PI	(PIO2+PIO2)
 
-#define gfltconv _gfltconv
-
 /*
  * Time-of-day
  */
