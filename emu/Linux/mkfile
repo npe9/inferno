@@ -31,8 +31,8 @@ LIBNAMES=${LIBS:%=lib%.a}
 
 HFILES=\
 
-CFLAGS='-DROOT="'$ROOT'"' -DEMU -I. -I../port -I$ROOT/$SYSTARG/$OBJTYPE/include -I$ROOT/include -I$ROOT/libinterp $CTHREADFLAGS $CFLAGS $EMUOPTIONS
-SYSLIBS= -lm -lX11 -lXext
+CFLAGS='-DROOT="'$ROOT'"' -DEMU-I. -I../port -I$ROOT/$SYSTARG/$OBJTYPE/include -I$ROOT/include -I$ROOT/libinterp  $XENINC $CTHREADFLAGS $CFLAGS $EMUOPTIONS
+SYSLIBS= -lm -lX11 -lXext $XENLIBS
 KERNDATE=`{$NDATE}
 
 default:V:	$O.$CONF

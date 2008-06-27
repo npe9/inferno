@@ -58,20 +58,19 @@ msmconnect(Conv *c)
 	chan = (struct chan_pipe *) c->chan;
 	if(c->state == Announcing) {	
 		chan->magic = CHAN_MAGIC;
+		chan->buflen = c->bufsize;
 		chan->out.magic = CHAN_BUF_MAGIC;
-		chan->out.buflen = c->bufsize;
 		chan->out.write = 0;
 		chan->out.read = 0;
 		chan->out.overflow = 0;
 		chan->in.magic = CHAN_BUF_MAGIC;
-		chan->in.buflen = c->bufsize;
 		chan->in.write = 0;
 		chan->in.read = 0;
 		chan->in.overflow = 0;
 		chan->state = Announced;
 		c->mode = SM_SERVER;
 	} else {
-		c->bufsize = chan->out.buflen;
+		c->bufsize = chan->buflen;
 		c->mode = SM_CLIENT;	
 		if(chan->magic != CHAN_MAGIC) {
 			error("you suck\n");

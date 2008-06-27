@@ -83,7 +83,7 @@ enum
 	S_USM=	1,		/* Sys V shared memory */
 	S_MSM=	2,		/* mmap */
 	S_XEN=	3,		/* xen shared memory */
-	S_PAPR=4,		/* FUTURE: power virtualization */
+	S_PAPR=	4,		/* FUTURE: power virtualization */
 	S_KVM=	5,		/* FUTURE: KVM shared memory */
 	S_PPE=	6,		/* FUTURE: Cell */
 	S_PCI=	7,		/* FUTURE: PCI bus */
@@ -109,7 +109,6 @@ struct chan
 	__u32 write; 
 	__u32 read; 
 	__u32 overflow;
-	__u32 buflen;
 };
 
 enum {
@@ -122,7 +121,8 @@ enum {
 struct chan_pipe
 {
 	__u32 magic;
-	int state;
+	__u32 buflen;
+	__u32 state;
 	Channel out;
 	Channel in;
 	char buffers[0];

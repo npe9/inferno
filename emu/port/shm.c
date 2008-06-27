@@ -101,11 +101,11 @@ shmwrite(struct Conv *conv, void *src, unsigned long len)
 	struct chan_pipe *p = (struct chan_pipe *)conv->chan;
 	Channel *c = &p->out;
 	int bufoff = 0;
-	__u32 bufsize = c->buflen;
+	__u32 bufsize = p->buflen;
 
 	if(conv->mode != SM_CLIENT) {
 		c = &p->in;
-		bufoff = c->buflen;
+		bufoff = p->buflen;
 	}
 
 	while (!check_write_buffer(c, bufsize)) {
@@ -143,11 +143,11 @@ shmread(struct Conv *conv, void *dst,  unsigned long len)
 	struct chan_pipe *p = (struct chan_pipe *)conv->chan;
 	Channel *c = &p->out;
 	int bufoff = 0;
-	__u32 bufsize = c->buflen;
+	__u32 bufsize = p->buflen;
 
 	if(conv->mode == SM_CLIENT) {
 		c = &p->in;
-		bufoff = c->buflen;
+		bufoff = p->buflen;
 	}
 
 	while (!check_read_buffer(c, bufsize)) {
@@ -186,10 +186,10 @@ shmdebug(struct Conv *c, void *buf, unsigned long len)
 {
 	int ret;
 	struct chan_pipe *chan = (struct chan_pipe *) c->chan;
-	ret = sprint(buf, "Magic: %ux\nOut\n Out.Magic: %ux\n Out.buflen: %ux\n Out.write: %ux\n Out.read: %ux\n Out.over: %ux\nIn\n In.Magic: %ux\n In.buflen: %ux\n In.write: %ux\n In.read: %ux\n In.over: %ux\nIn.buf:%ux\nOut.buf:%ux\nBuf:%ux\n",
-		chan->magic, chan->out.magic, chan->out.buflen, chan->out.write, chan->out.read, 
-		chan->out.overflow, chan->in.magic, chan->in.buflen, chan->in.write, chan->in.read,
-		chan->in.overflow, chan->buffers+chan->in.buflen, chan->buffers+0, chan->buffers);
+	ret = sprint(buf, "Magic: %ux\nBuflen: %ux\nOut\n Out.Magic: %ux\n Out.write: %ux\n Out.read: %ux\n Out.over: %ux\nIn\n In.Magic: %ux\n In.write: %ux\n In.read: %ux\n In.over: %ux\nIn.buf:%ux\nOut.buf:%ux\nBuf:%ux\n",
+		chan->magic, chan->buflen, chan->out.magic, chan->out.write, chan->out.read, 
+		chan->out.overflow, chan->in.magic, chan->in.write, chan->in.read,
+		chan->in.overflow, chan->buffers+chan->buflen, chan->buffers+0, chan->buffers);
 	return ret;
 }
 
