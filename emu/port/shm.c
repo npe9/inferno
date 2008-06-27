@@ -220,7 +220,7 @@ usmconnect(Conv *c)
 	int flags = 0660;
 
 	if(c->state == Announcing) {
-		shmid = atoi(c->laddr);
+		shmkey = atoi(c->laddr);
 		offset = c->lport;
 		flags |= IPC_CREAT;
 		if(c->bufsize == 0)
@@ -229,18 +229,19 @@ usmconnect(Conv *c)
 		shmkey = atoi(c->raddr);
 		offset = c->rport;
 	}
-
 	shmid = shmget(shmkey, offset+sizeof(struct chan_pipe)+
 				(c->bufsize*2), flags);
-
 	if(shmid < 0) {
+		perror("usmconnect: shmget: ");		
 		error("Could not connect or create shared memory segment");
+		print("Could not connect or create shared memory segment");
 		return -1;
 	}
-
 	c->raw = (void *) shmat(shmid, 0, 0);	
 	if(c->raw < 0) {
+		perror("usmconnect: shmat: ");
 		error("Could not attach to shared memory segment");
+		print("Could not attach to shared memory segment");
 		return -1;
 	}
 
@@ -274,7 +275,6 @@ usmconnect(Conv *c)
 			nanosleep(HANDSHAKE_POLL);
 		c->mode = SM_CLIENT;
 	}	
-	
 	return 0;
 }
 
@@ -309,6 +309,7 @@ static int
 usmlisten(struct Conv *c)
 {
 	struct chan_pipe *chan = (struct chan_pipe *)c->chan;
+
 	while(chan->state != Connecting)
 		sleep(1);
 
