@@ -377,7 +377,10 @@ devshmopen(Chan *c, int omode)
 
 		if(p->op.listen(cv) < 0) {
 			p->op.close(cv);
-			error(Enodev);
+			if(cv->state != Hungup)
+				error(Enodev);
+			else
+				error(Ehungup);
 		}
 
 		nc = protoclone(p, up->env->user, CONV(c->qid));

@@ -235,7 +235,7 @@ xsmconnect(Conv *c)
 
 	/* TODO: Adjust to reduce startup latency */
 	while ((domid = xen_get_domid(domain)) == 0) 
-		sleep(1);
+		osyield();
 
 	/* FIXME: we can, for now, only map the first 128 meg */
 	c->raw = (char *) xen_map_128Meg(domid);

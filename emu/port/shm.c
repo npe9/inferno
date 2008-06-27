@@ -151,8 +151,10 @@ shmread(struct Conv *conv, void *dst,  unsigned long len)
 	}
 
 	while (!check_read_buffer(c, bufsize)) {
-		if(p->state == Hungup)
+		if((p->magic == 0xDEADDEAD)||(p->state == Hungup)) {
+			conv->state = Hungup;
 			return 0;
+		}
 		yield(conv->datapoll);
 	}
 
@@ -161,8 +163,10 @@ shmread(struct Conv *conv, void *dst,  unsigned long len)
 		const char *src;
 		src = get_read_chunk(c, p->buffers+bufoff, bufsize, &thislen); 
 		if (thislen == 0) {
-			if(p->state == Hungup)
+			if((p->magic == 0xDEADDEAD)||(p->state == Hungup)) {
+				conv->state = Hungup;
 				return 0;
+			}
 			yield(conv->datapoll);
 			continue;
 		}
@@ -198,9 +202,13 @@ shmlisten(struct Conv *c)
 {
 	struct chan_pipe *chan = (struct chan_pipe *)c->chan;
 
-	while(chan->state != Connecting)
-		sleep(1);
+	while((chan->state != Connecting)&&(chan->magic != 0xDEADDEAD))
+		yield(0);
 
+	if(chan->magic == 0xDEADDEAD) {
+		c->state=chan->state=Hungup;
+		return -1;
+	}
 	chan->state = Connected;
 	mb();
 	return 0;
