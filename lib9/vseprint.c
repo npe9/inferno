@@ -11,6 +11,7 @@
  * REPRESENTATION OR WARRANTY OF ANY KIND CONCERNING THE MERCHANTABILITY
  * OF THIS SOFTWARE OR ITS FITNESS FOR ANY PARTICULAR PURPOSE.
  */
+#include <stdarg.h>
 #include "lib9.h"
 
 char*
@@ -27,8 +28,9 @@ vseprint(char *buf, char *e, char *fmt, va_list args)
 	f.flush = nil;
 	f.farg = nil;
 	f.nfmt = 0;
-	f.args = args;
+	va_copy(f.args,args);
 	dofmt(&f, fmt);
+	va_end(f.args);
 	*(char*)f.to = '\0';
 	return f.to;
 }

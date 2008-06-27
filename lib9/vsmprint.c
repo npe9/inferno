@@ -65,8 +65,9 @@ vsmprint(char *fmt, va_list args)
 
 	if(fmtstrinit(&f) < 0)
 		return nil;
-	f.args = args;
+	va_copy(f.args,args);
 	n = dofmt(&f, fmt);
+	va_end(f.args);
 	if(n < 0)
 		return nil;
 	*(char*)f.to = '\0';

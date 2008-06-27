@@ -11,6 +11,7 @@
  * REPRESENTATION OR WARRANTY OF ANY KIND CONCERNING THE MERCHANTABILITY
  * OF THIS SOFTWARE OR ITS FITNESS FOR ANY PARTICULAR PURPOSE.
  */
+#include <stdarg.h>
 #include "lib9.h"
 #include "fmtdef.h"
 
@@ -29,13 +30,16 @@ fmtvprint(Fmt *f, char *fmt, va_list args)
 	f->flags = 0;
 	f->width = 0;
 	f->prec = 0;
-	va = f->args;
-	f->args = args;
+	va_copy(va,f->args);
+	va_end(f->args);
+	va_copy(f->args,args);
 	n = dofmt(f, fmt);
 	f->flags = 0;
 	f->width = 0;
 	f->prec = 0;
-	f->args = va;
+	va_end(f->args);
+	va_copy(f->args,va);
+	va_end(va);
 	if(n >= 0)
 		return 0;
 	return n;

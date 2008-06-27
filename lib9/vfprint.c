@@ -11,6 +11,7 @@
  * REPRESENTATION OR WARRANTY OF ANY KIND CONCERNING THE MERCHANTABILITY
  * OF THIS SOFTWARE OR ITS FITNESS FOR ANY PARTICULAR PURPOSE.
  */
+#include <stdarg.h>
 #include "lib9.h"
 #include "fmtdef.h"
 
@@ -38,8 +39,9 @@ vfprint(int fd, char *fmt, va_list args)
 	int n;
 
 	fmtfdinit(&f, fd, buf, sizeof(buf));
-	f.args = args;
+	va_copy(f.args,args);
 	n = dofmt(&f, fmt);
+	va_end(f.args);
 	if(n > 0 && _fmtFdFlush(&f) == 0)
 		return -1;
 	return n;
