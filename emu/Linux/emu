@@ -77,6 +77,8 @@ port
 	uqid
 
 code
+	int macjit = 1;
+	int dontcompile = 1;
 
 init
 	emuinit
