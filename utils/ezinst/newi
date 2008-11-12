@@ -1,0 +1,64 @@
+#!/bin/sh
+set -x
+# automatically 
+
+# need to create a root
+ROOT=$HOME/inferno-npe
+HOST=`uname -a | awk '{print $1}'`
+if test $HOST == Darwin
+then
+	HOST=MacOSX
+fi
+case `uname -m` in
+i*86)		OBJTYPE=386;;
+ppc*) 	OBJTYPE=power;;
+*)		echo invalid objtype 1>2; exit ;; 
+esac
+# BUG: doesn't handle two instances of the same variable
+# BUG: doesn't detect correctly set variables
+echo '
+/^ROOT/s/^/#/
+a
+ROOT='$ROOT'
+.
+/^OBJTYPE/s/^/#/
+a
+OBJTYPE='$OBJTYPE'
+.
+/^HOST/s/^/#/
+a
+HOST='$HOST'
+.
+/^SYSHOST/s/^/#/
+a
+SYSHOST='$HOST'
+.
+w' | 9 ed $ROOT/mkconfig
+
+PATH=$ROOT/$HOST/$OBJTYPE/bin:$PATH
+(cd $ROOT && ./makemk.sh && mk install)
+# what about things that share a filesystem?
+# need to make a system
+for i in $*
+do
+	case $i in
+	auth)
+		echo set up auth server
+		#echo >>$ROOT/lib/profile
+		;;
+	cpu)
+		echo set up cpu server
+		#echo >>$ROOT/lib/profile
+
+		;;
+	fs)
+		echo set up file server
+		#echo >>$ROOT/lib/profile
+		;;
+	esac
+done
+#	echo '
+#
+#ib4R88gX
+#' | emu getauthinfo 'tcp!'$i
+#emu 
