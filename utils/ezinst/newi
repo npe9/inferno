@@ -33,7 +33,7 @@ HOST='$HOST'
 a
 SYSHOST='$HOST'
 .
-w' | 9 ed $ROOT/mkconfig
+w' |  ed $ROOT/mkconfig
 
 PATH=$ROOT/$HOST/$OBJTYPE/bin:$PATH
 (cd $ROOT && ./makemk.sh && mk install)
