@@ -5,13 +5,14 @@ set -x
 # need to create a root
 ROOT=$HOME/inferno-npe
 HOST=`uname -a | awk '{print $1}'`
-if test $HOST == Darwin
-then
-	HOST=MacOSX
-fi
+case $HOST in
+Darwin)	HOST=MacOSX;;
+SunOS)	HOST=Solaris;;
+esac
 case `uname -m` in
-i*86 | x86*)		OBJTYPE=386;;
-ppc*) 	OBJTYPE=power;;
+i*86 | x86*)	OBJTYPE=386;;
+ppc*) 		OBJTYPE=power;;
+sun4u)		OBJTYPE=sparc;;
 *)		echo invalid objtype 1>2; exit ;; 
 esac
 # BUG: doesn't handle two instances of the same variable
@@ -57,10 +58,6 @@ do
 		;;
 	esac
 done
-#	echo '
-#
-#ib4R88gX
-#' | emu getauthinfo 'tcp!'$i
 #emu 
 
 # use a factotum to get all of the users passwords
