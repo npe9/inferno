@@ -1,3 +1,40 @@
+=======
+TODO: sort
+20081112
+	emu/Linux/asm-arm.S old failure to use different regs for swp finally changed here
+	libmath/blas.c compensate for gcc bug on arm
+20081107
+	replace calls to calloc by malloc
+20081106
+	os/port/dis.c prevent new spawns during killgrp
+	also synchronise two killgrps of the same group
+20081105
+	emu/port/dis.c prevent new spawns during killgrp [#117]
+20081022
+	sh: ignore leading white space in fail: strings, and change empty tail to "failed"
+	/emu/port/devfs-posix.c don't call readdir after it has returned end of file
+20081021
+	/appl/cmd/auth/ai2key.b new command to convert authinfo files to factotum keys
+	/appl/cmd/auth/factotum/proto/infauth.b allow new key format
+20081019
+	/appl/cmd/man2html.b implement "\ " => "&nbsp;"
+	/man/3/prog change way a literal " was formatted
+	/man/8/srv deleted (obsolete)
+	removed reference to srv(8) from sys-pctl(2)
+20080909
+	/appl/cmd/puttar.b add extra empty block at end of archive as required by format
+20080907
+	include some changes from acme-sac in emu/Nt/devfs.c; need further control of usesec (or discard it)
+20080723
+	rename Inferno's yacc to iyacc to avoid clash with system's own (now that Linux and others distribute it)
+20080707
+	update emu/port/win-x11a.c (fix someone's earlier patch to stop using undefined value)
+	emu/port/main.c mark obsolete options and remove from usage
+20080705
+	update utils/sed, eliminating anonymous unions (just by commenting them out, to keep source in step with 9)
+		and several other changes for portability
+20080703
+	remove anonymous unions (and unused structs) from unpacking structures in emu/Nt/vlrt.c, not that it's used
 20080617
 	win-x11a.c add sqweek's change to pass on KeyRelease values (but perhaps 1-byte values are no longer enough?)
 20080614

@@ -29,6 +29,7 @@ struct Fsinfo
 	struct dirent*	de;	/* directory reading */
 	int	fd;		/* open files */
 	ulong	offset;	/* offset when reading directory */
+	int	eod;	/* end of directory */
 	QLock	oq;	/* mutex for offset */
 	char*	spec;
 	Cname*	name;	/* Unix's name for file */
@@ -278,6 +279,7 @@ fsopen(Chan *c, int mode)
 		FS(c)->dir = opendir(FS(c)->name->s);
 		if(FS(c)->dir == 0)
 			oserror();
+		FS(c)->eod = 0;
 	}
 	else {
 		if(mode & OTRUNC)
@@ -333,6 +335,10 @@ fscreate(Chan *c, char *name, int mode, ulong perm)
 		FS(c)->dir = opendir(n->s);
 		if(FS(c)->dir == nil)
 			oserror();
+<<<<<<< HEAD:emu/port/devfs-posix.c
+=======
+		FS(c)->eod = 0;
+>>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:emu/port/devfs-posix.c
 	} else {
 		o = (O_CREAT | O_EXCL) | (mode&3);
 		if(mode & OTRUNC)
@@ -752,11 +758,19 @@ fsdirread(Chan *c, uchar *va, int count, vlong offset)
 	if(FS(c)->offset != offset) {
 		seekdir(FS(c)->dir, 0);
 		FS(c)->de = nil;
+<<<<<<< HEAD:emu/port/devfs-posix.c
+=======
+		FS(c)->eod = 0;
+>>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:emu/port/devfs-posix.c
 		for(n=0; n<offset; ) {
 			de = readdir(FS(c)->dir);
 			if(de == 0) {
 				/* EOF, so stash offset and return 0 */
 				FS(c)->offset = n;
+<<<<<<< HEAD:emu/port/devfs-posix.c
+=======
+				FS(c)->eod = 1;
+>>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:emu/port/devfs-posix.c
 				return 0;
 			}
 			if(de->d_ino==0 || de->d_name[0]==0 || isdots(de->d_name))
@@ -778,6 +792,12 @@ fsdirread(Chan *c, uchar *va, int count, vlong offset)
 		FS(c)->offset = offset;
 	}
 
+<<<<<<< HEAD:emu/port/devfs-posix.c
+=======
+	if(FS(c)->eod)
+		return 0;
+
+>>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:emu/port/devfs-posix.c
 	/*
 	 * Take idl on behalf of id2name.  Stalling attach, which is a
 	 * rare operation, until the readdir completes is probably
@@ -789,8 +809,15 @@ fsdirread(Chan *c, uchar *va, int count, vlong offset)
 		FS(c)->de = nil;
 		if(de == nil)
 			de = readdir(FS(c)->dir);
+<<<<<<< HEAD:emu/port/devfs-posix.c
 		if(de == nil)
 			break;
+=======
+		if(de == nil){
+			FS(c)->eod = 1;
+			break;
+		}
+>>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:emu/port/devfs-posix.c
 
 		if(de->d_ino==0 || de->d_name[0]==0 || isdots(de->d_name))
 			continue;

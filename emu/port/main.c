@@ -24,7 +24,7 @@ extern	int	mflag;
 	int	sflag;
 	int	qflag;
 	int	xtblbit;
-	int	globfs;
+>>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:emu/port/main.c
 	ulong	displaychan;
 char *cputype;
 
@@ -34,7 +34,6 @@ usage(void)
 	fprint(2, "Usage: emu [options...] [file.dis [args...]]\n"
 		"\t-gXxY\n"
 		"\t-c[0-9]\n"
-		"\t-b\n"
 		"\t-d file.dis\n"
 		"\t-s\n"
 		"\t-v\n"
@@ -42,7 +41,10 @@ usage(void)
 		"\t-f<fontpath>\n"
 		"\t-r<rootpath>\n"
 		"\t-7\n"
+<<<<<<< HEAD:emu/port/main.c
 		"\t-G\n"
+=======
+		"\t-B\n"
 		"\t-C<channel string>\n"
 		"\t-S\n");
 
@@ -127,8 +129,12 @@ option(int argc, char *argv[], void (*badusage)(void))
 		if (geom(EARGF(badusage())) == 0)
 			badusage();
 		break;
+<<<<<<< HEAD:emu/port/main.c
 	case 'b':		/* (obsolete) jit array bounds checking */
 		bflag = 1;
+=======
+	case 'b':		/* jit array bounds checking (obsolete, now on by default) */
+>>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:emu/port/main.c
 		break;
 	case 'B':		/* suppress jit array bounds checks */
 		bflag = 0;
@@ -171,8 +177,12 @@ option(int argc, char *argv[], void (*badusage)(void))
 	case '7':		/* use 7 bit colormap in X */
 		xtblbit = 1;
 		break;
+<<<<<<< HEAD:emu/port/main.c
 	case 'G':		/* allow global access to file system */
 		globfs = 1;
+=======
+	case 'G':		/* allow global access to file system (obsolete) */
+>>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:emu/port/main.c
 		break;
 	case	'C':		/* channel specification for display */
 		cp = EARGF(badusage());

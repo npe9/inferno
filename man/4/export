@@ -5,8 +5,7 @@ export \- export name space on a connection
 .B export
 [
 .B \-a
-] [
-.B \-n
+>>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:man/4/export
 ]
 .I dir
 [
@@ -32,28 +31,19 @@ option is given, however,
 .I export
 starts an Inferno kernel process
 to serve the name space and returns immediately.
-.PP
-Normally,
-.I export
-forks the current name space, and makes
-.I dir
-the root of its copy.
-Changes subsequently made to the current name space will
-not be visible to clients of
-.IR export .
-If the
-.B \-n
-option is given, however, and
-.I dir
-is the root
-.RB (` / '),
-.I export
+.I Export
 serves the current name space without forking it; changes made to it
 will be visible to clients.
 .PP
 .I Export
 starts serving Styx immediately; it assumes that the connection
 has been authenticated if required.
+<<<<<<< HEAD:man/4/export
+=======
+.I Export
+is typically called via
+.IR listen (1),
+which can authenticate the connection.
 .SH EXAMPLE
 Start a background process to serve the name space on the serial port.
 .IP
@@ -65,5 +55,9 @@ unless a transport protocol is run on the connection.
 .B /appl/cmd/export.b
 .SH SEE ALSO
 .IR cpu (1),
+<<<<<<< HEAD:man/4/export
+=======
+.IR listen (1),
+>>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:man/4/export
 .IR sys-dial (2),
 .IR intro (5)

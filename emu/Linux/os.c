@@ -16,6 +16,10 @@
 #include	<sys/syscall.h>
 #define	getpid()	syscall(SYS_getpid)
 
+/* temporarily suppress CLONE_PTRACE so it works on broken Linux kernels */
+#undef CLONE_PTRACE
+#define	CLONE_PTRACE	0
+
 enum
 {
 	DELETE	= 0x7f,
@@ -287,10 +291,6 @@ cleanexit(int x)
 void
 osreboot(char *file, char **argv)
 {
-	if(dflag == 0)
-		termrestore();
-	execvp(file, argv);
-	error("reboot failure");
 }
 
 void
