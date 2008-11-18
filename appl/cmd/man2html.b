@@ -486,8 +486,6 @@ subgoobie(g: ref Global, argl: list of string)
 	"1C" or "2C" or "DT" or "TF" =>	 # ignore these
 		return;
 
-<<<<<<< HEAD:appl/cmd/man2html.b
-=======
 	"ig" =>
 		while ((line := getline(g)) != nil){
 			if(len line > 1 && line[0:2] == "..")
@@ -495,7 +493,6 @@ subgoobie(g: ref Global, argl: list of string)
 		}
 		return;
 
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:appl/cmd/man2html.b
 	"P" or "PP" or "LP" =>
 			g_PP(g);
 
@@ -1093,8 +1090,6 @@ Global.softp(g: self ref Global): string
 }
 
 #
-<<<<<<< HEAD:appl/cmd/man2html.b
-=======
 # get (remainder of) a line
 #
 getline(g: ref Global): string
@@ -1109,7 +1104,6 @@ getline(g: ref Global): string
 }
 
 #
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:appl/cmd/man2html.b
 # Get next logical character.  Expand it with escapes.
 #
 getnext(g: ref Global): string
@@ -1145,12 +1139,9 @@ getnext(g: ref Global): string
 		g.lastc = c;
 		case c {
 
-<<<<<<< HEAD:appl/cmd/man2html.b
-=======
 		' ' =>
 			return "&nbsp;";
 
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:appl/cmd/man2html.b
 		# chars to ignore
 		'|' or '&' or '^' =>
 			return getnext(g);
@@ -1213,11 +1204,7 @@ getnext(g: ref Global): string
 #			if (g.curfont != nil)
 #				token += sprint("<%s>", g.curfont);
 			if (token == nil)
-<<<<<<< HEAD:appl/cmd/man2html.b
-				return " ";	# shouldn't happen - maybe a \fR inside a font macro - just do something!
-=======
 				return "<i></i>";	# looks odd but it avoids inserting a space in <pre> text
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:appl/cmd/man2html.b
 			return token;
 		's' =>
 			sign := '+';

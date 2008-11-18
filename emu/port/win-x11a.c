@@ -264,21 +264,13 @@ attachscreen(Rectangle *r, ulong *chan, int *d, int *width, int *softscreen)
 		gscreendata = malloc(Xsize * Ysize * (displaydepth >> 3));
 		xscreendata = malloc(Xsize * Ysize * (depth >> 3));
 		if(!gscreendata || !xscreendata) {
-<<<<<<< HEAD:emu/port/win-x11a.c
-			fprint(2, "emu: can not allocate virtual screen buffer\n");
-=======
 			fprint(2, "emu: can not allocate virtual screen buffer (%dx%dx%d[%d])\n", Xsize, Ysize, displaydepth, depth);
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:emu/port/win-x11a.c
 			return 0;
 		}
 		img = XCreateImage(xdisplay, xvis, xscreendepth, ZPixmap, 0, 
 				   (char*)xscreendata, Xsize, Ysize, 8, Xsize * (depth >> 3));
 		if(img == nil) {
-<<<<<<< HEAD:emu/port/win-x11a.c
-			fprint(2, "emu: can not allocate virtual screen buffer\n");
-=======
 			fprint(2, "emu: can not allocate virtual screen buffer (%dx%dx%d)\n", Xsize, Ysize, depth);
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:emu/port/win-x11a.c
 			return 0;
 		}
 		
@@ -298,10 +290,7 @@ flushmemscreen(Rectangle r)
 {
 	int x, y, width, height, dx;
 	uchar *p, *ep, *cp;
-<<<<<<< HEAD:emu/port/win-x11a.c
-=======
 	char chanbuf[16];
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:emu/port/win-x11a.c
 
 	// Clip to screen
 	if(r.min.x < 0)
@@ -316,11 +305,7 @@ flushmemscreen(Rectangle r)
 	// is there anything left ...	
 	width = r.max.x-r.min.x;
 	height = r.max.y-r.min.y;
-<<<<<<< HEAD:emu/port/win-x11a.c
-	if((width < 1) | (height < 1))
-=======
 	if(width <= 0 || height <= 0)
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:emu/port/win-x11a.c
 		return;
 
 	// Blit the pixel data ...
@@ -427,12 +412,8 @@ flushmemscreen(Rectangle r)
 		}
 	}
 	else{
-<<<<<<< HEAD:emu/port/win-x11a.c
-		fprint(2, "emu: bad display depth %d\n", displaydepth);
-=======
 		fprint(2, "emu: bad display depth %d chan %s xscreendepth %d\n", displaydepth,
 			chantostr(chanbuf, displaychan), xscreendepth);
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:emu/port/win-x11a.c
 		cleanexit(0);
 	}
 
@@ -728,35 +709,6 @@ xinitscreen(int xsize, int ysize, ulong c, ulong *chan, int *d)
 			fprint(2, "emu: win-x11 could not determine pixel format.\n");
 			cleanexit(0);
 		}
-<<<<<<< HEAD:emu/port/win-x11a.c
-	}
-		
-	switch(*d){
-	case 1:	/* untested */
-		*chan = GREY1;
-		break;
-	case 2:	/* untested */
-		*chan = GREY2;
-		break;
-	case 4:	/* untested */
-		*chan = GREY4;
-		break;
-	case 8:
-		*chan = CMAP8;
-		break;
-	case 15:
-		*chan = RGB15;
-		break;
-	case 16: /* how to tell RGB15? */
-		*chan = RGB16;
-		break;
-	case 24: /* untested (impossible?) */
-		*chan = RGB24;
-		break;
-	case 32:
-		*chan = XRGB32;
-		break;
-=======
 			
 		switch(*d){
 		case 1:	/* untested */
@@ -787,7 +739,6 @@ xinitscreen(int xsize, int ysize, ulong c, ulong *chan, int *d)
 	}else{
 		*d = chantodepth(c);
 		*chan = c;		/* not every channel description will work */
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:emu/port/win-x11a.c
 	}
 
 	if(xvis->class != StaticColor) {
@@ -797,16 +748,10 @@ xinitscreen(int xsize, int ysize, ulong c, ulong *chan, int *d)
 			graphicscmap(map);
 			graphicsrgbmap(mapr, mapg, mapb);
 		}
-<<<<<<< HEAD:emu/port/win-x11a.c
-		initmap(rootwin, c, chan, d);
-	}
-
-=======
 		initmap(rootwin);
 	}
 
 	memset(&attrs, 0, sizeof(attrs));
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:emu/port/win-x11a.c
 	attrs.colormap = xcmap;
 	attrs.background_pixel = 0;
 	attrs.border_pixel = 0;
@@ -817,30 +762,21 @@ xinitscreen(int xsize, int ysize, ulong c, ulong *chan, int *d)
 	/*
 	 * set up property as required by ICCCM
 	 */
-<<<<<<< HEAD:emu/port/win-x11a.c
-=======
 	memset(&name, 0, sizeof(name));
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:emu/port/win-x11a.c
 	name.value = (uchar*)"inferno";
 	name.encoding = XA_STRING;
 	name.format = 8;
 	name.nitems = strlen((char*)name.value);
-<<<<<<< HEAD:emu/port/win-x11a.c
-=======
 
 	memset(&normalhints, 0, sizeof(normalhints));
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:emu/port/win-x11a.c
 	normalhints.flags = USSize|PMaxSize;
 	normalhints.max_width = normalhints.width = xsize;
 	normalhints.max_height = normalhints.height = ysize;
 	hints.flags = InputHint|StateHint;
 	hints.input = 1;
 	hints.initial_state = NormalState;
-<<<<<<< HEAD:emu/port/win-x11a.c
-=======
 
 	memset(&classhints, 0, sizeof(classhints));
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:emu/port/win-x11a.c
 	classhints.res_name = "inferno";
 	classhints.res_class = "Inferno";
 	argv[0] = "inferno";
@@ -976,11 +912,7 @@ graphicsrgbmap(XColor *mapr, XColor *mapg, XColor *mapb)
  * application.  Inferno gets the best colors here when it has the cursor focus.
  */  
 static void 
-<<<<<<< HEAD:emu/port/win-x11a.c
-initmap(XWindow w, ulong cc, ulong *chan, int *d)
-=======
 initmap(XWindow w)
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:emu/port/win-x11a.c
 {
 	XColor c;
 	int i;
@@ -988,13 +920,9 @@ initmap(XWindow w)
 	if(xscreendepth <= 1)
 		return;
 
-<<<<<<< HEAD:emu/port/win-x11a.c
-	if(xvis->class == TrueColor || xvis->class == DirectColor) {
-=======
 	switch(xvis->class){
 	case TrueColor:
 	case DirectColor:
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:emu/port/win-x11a.c
 		for(i = 0; i < 256; i++) {
 			c = map[i];
 			/* find out index into colormap for our RGB */
@@ -1015,14 +943,9 @@ initmap(XWindow w)
 				infernobtox11[i] = (c.pixel>>0)&0xff;
 			}
 		}
-<<<<<<< HEAD:emu/port/win-x11a.c
-	}
-	else if(xvis->class == PseudoColor) {
-=======
 		break;
 
 	case PseudoColor:
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:emu/port/win-x11a.c
 		if(xtblbit == 0){
 			xcmap = XCreateColormap(xdisplay, w, xvis, AllocAll); 
 			XStoreColors(xdisplay, xcmap, map, 256);
@@ -1039,14 +962,6 @@ initmap(XWindow w)
 				infernotox11[map7to8[i][1]] = c.pixel;
 			}
 		}
-<<<<<<< HEAD:emu/port/win-x11a.c
-	}
-	else {
-		xtblbit = 0;
-		fprint(2, "emu: win-x11 unsupported visual class %d\n", xvis->class);
-	}
-	return;
-=======
 		break;
 
 	default:
@@ -1054,7 +969,6 @@ initmap(XWindow w)
 		fprint(2, "emu: win-x11 unsupported visual class %d\n", xvis->class);
 		break;
 	}
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:emu/port/win-x11a.c
 }
 
 static void

@@ -465,8 +465,6 @@ xlate(address: string, now: int): (list of string, string)
 	while(l != nil) {
 		s := hd l;
 		l = tl l;
-<<<<<<< HEAD:appl/cmd/ndb/cs.b
-=======
 		dnetw := netw;
 		if(s != nil){
 			(divert, err) := ipattr->findnetattr(ndb, "ip", s, "divert-"+netw);
@@ -477,16 +475,11 @@ xlate(address: string, now: int): (list of string, string)
 			}
 		}
 
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:appl/cmd/ndb/cs.b
 		if(s != "")
 			s[len s] = '!';
 		s += service;
 
-<<<<<<< HEAD:appl/cmd/ndb/cs.b
-		repl = mntpt+"/"+netw+"/clone "+s;
-=======
 		repl = mntpt+"/"+dnetw+"/clone "+s;
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:appl/cmd/ndb/cs.b
 		if(verbose)
 			sys->fprint(stderr, "cs: %s!%s!%s -> %s\n", netw, mach, service, repl);
 

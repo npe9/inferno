@@ -1667,11 +1667,7 @@ mkquery(qtype: int, qclass: int, name: string): (int, array of byte, string)
 {
 	qd := ref QR(name, qtype, qclass);
 	dm := ref DNSmsg;
-<<<<<<< HEAD:appl/cmd/ndb/dns.b
-	dm.id = dnsid++;	# doesn't matter if two different procs use it
-=======
 	dm.id = dnsid++;	# doesn't matter if two different procs use it (different fds)
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:appl/cmd/ndb/dns.b
 	dm.flags = Oquery;
 	if(referdns || !debug)
 		dm.flags |= Frecurse;
@@ -1684,11 +1680,7 @@ mkquery(qtype: int, qclass: int, name: string): (int, array of byte, string)
 		a[i] = byte 0;
 	a[Udprport] = byte (DNSport>>8);
 	a[Udprport+1] = byte DNSport;
-<<<<<<< HEAD:appl/cmd/ndb/dns.b
-	return (dm.id, a, nil);
-=======
 	return (dm.id&16rFFFF, a, nil);
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:appl/cmd/ndb/dns.b
 }
 
 udpquery(fd: ref Sys->FD, id: int, query: array of byte, sname: string, addr: ref RR): (ref DNSmsg, string)

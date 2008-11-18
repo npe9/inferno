@@ -37,7 +37,7 @@ SYSHOST='$HOST'
 w' |  ed $ROOT/mkconfig
 
 PATH=$ROOT/$HOST/$OBJTYPE/bin:$PATH
-(cd $ROOT && ./makemk.sh && mk install)
+(cd $ROOT && ./makemk.sh && mk all  && mk install)
 # what about things that share a filesystem?
 # need to make a system
 for i in $*
