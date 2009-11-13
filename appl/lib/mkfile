@@ -36,6 +36,7 @@ TARG=\
 	deflate.dis\
 	devpointer.dis\
 	dhcpclient.dis\
+	dial.dis\
 	dialog.dis\
 	dict.dis\
 	dis.dis\
@@ -70,6 +71,7 @@ TARG=\
 	lock.dis\
 	login.dis\
 	man.dis\
+	memfs.dis\
 	mpeg.dis\
 	msgio.dis\
 	nametree.dis\
@@ -166,6 +168,7 @@ SYSMODULES= \
 	draw.m\
 	env.m\
 	exception.m\
+	factotum.m\
 	filepat.m\
 	filter.m\
 	fslib.m\

@@ -1,5 +1,4 @@
-#include <u.h>
-#include <libc.h>
+#include <lib9.h>
 
 #define	MASK	0x7ffL
 #define	SHIFT	20

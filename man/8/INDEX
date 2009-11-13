@@ -1,4 +1,7 @@
 intro 0intro
+ai2key ai2key
+dsagen ai2key
+rsagen ai2key
 applylog applylog
 updatelog applylog
 bootpd bootpd
@@ -40,13 +43,11 @@ rdbgsrv rdbgsrv
 register register
 rip rip
 rstyxd rstyxd
-styxd rstyxd
 shutdown shutdown
 countersigner signer
 signer signer
 verify signer
 sntp sntp
-srv srv
 styxchat styxchat
 styxmon styxmon
 auth svc

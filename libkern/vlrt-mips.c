@@ -16,13 +16,6 @@ struct	Vlong
 			ulong	hi;
 			ulong	lo;
 		};
-		struct
-		{
-			ushort	hims;
-			ushort	hils;
-			ushort	loms;
-			ushort	lols;
-		};
 	};
 };
 
