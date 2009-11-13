@@ -1,5 +1,4 @@
-#include <u.h>
-#include <libc.h>
+#include <lib9.h>
 
 #define	NANEXP	(2047<<20)
 #define	NANMASK	(2047<<20)

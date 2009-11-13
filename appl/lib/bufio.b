@@ -172,11 +172,11 @@ Iobuf.seek(b: self ref Iobuf, off: big, start: int): big
 	b.size = 0;
 	b.index = 0;
 	if ((s := sys->seek(b.fd, off, start)) < big 0) {
-		b.filpos = b.bufpos = big 0;
+		b.bufpos = b.filpos;
 		return big ERROR;
 	}
 	b.bufpos = b.filpos = s;
-	return b.bufpos = b.filpos = s;
+	return s;
 }
 
 Iobuf.offset(b: self ref Iobuf): big

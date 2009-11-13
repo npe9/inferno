@@ -1,4 +1,6 @@
 INSTALL
+include
+	styxserver.h
 asm
 	NOTICE
 	asm.h
@@ -95,6 +97,7 @@ libdynld
 	dynld-mips.c
 	dynld-power.c
 	dynld-sparc.c
+	dynld-spim.c
 	dynld.c
 	dynloadfd.c
 	mkfile
@@ -795,7 +798,6 @@ tools
 		mkfile
 		styxaux.h
 		styxserver.c
-		styxserver.h
 	mkfile
 	odbc
 		mkfile

@@ -1,5 +1,7 @@
 intro 0intro
 ai2key ai2key
+dsagen ai2key
+rsagen ai2key
 applylog applylog
 updatelog applylog
 bootpd bootpd
@@ -41,18 +43,13 @@ prep prep
 rdbgsrv rdbgsrv
 register register
 rip rip
-<<<<<<< HEAD:man/8/INDEX
-=======
 rsagen	ai2key
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:man/8/INDEX
 rstyxd rstyxd
-styxd rstyxd
 shutdown shutdown
 countersigner signer
 signer signer
 verify signer
 sntp sntp
-srv srv
 styxchat styxchat
 styxmon styxmon
 auth svc

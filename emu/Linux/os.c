@@ -128,7 +128,7 @@ kproc(char *name, void (*func)(void*), void *arg, int flags)
 
 	if(flags & KPX11){
 		p->kstack = nil;	/* never freed; also up not defined */
-		tos = (char*)mallocz(X11STACK, 0) + X11STACK - sizeof(void*);
+		tos = (char*)mallocz(X11STACK, 0) + X11STACK - sizeof(vlong);
 	}else
 		p->kstack = stackalloc(p, &tos);
 
@@ -517,19 +517,7 @@ stackalloc(Proc *p, void **tos)
 	rv = stacklist.free;
 	stacklist.free = *(void **)rv;
 	unlock(&stacklist.l);
-	*tos = rv + KSTACK - sizeof(void *);
+	*tos = rv + KSTACK - sizeof(vlong);
 	*(Proc **)rv = p;
 	return rv;
 }
-
-#ifdef LINUX_ARM
-#define	SYS_cacheflush	__ARM_NR_cacheflush
-
-int
-segflush(void *a, ulong n)
-{
-	if(n)
-		syscall(SYS_cacheflush, a, (char*)a+n-1, 1);
-	return 0;
-}
-#endif

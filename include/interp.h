@@ -67,6 +67,13 @@ typedef struct Altc	Altc;
 typedef struct Except Except;
 typedef struct Handler Handler;
 
+struct ILock
+{
+	int	lk;
+	int	pid;
+	void*	ql;
+};
+
 struct Frame
 {
 	Inst*		lr;	/* REGLINK isa.h */

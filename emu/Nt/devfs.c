@@ -11,6 +11,10 @@
 
 /* TODO: try using / in place of \ in path names */
 
+#ifndef SID_MAX_SUB_AUTHORITIES
+#define	SID_MAX_SUB_AUTHORITIES	15
+#endif
+
 enum
 {
 	MAX_SID		= sizeof(SID) + SID_MAX_SUB_AUTHORITIES*sizeof(DWORD),
@@ -2264,20 +2268,10 @@ addgroups(User *u, int force)
 		net.ApiBufferFree(grp);
 	}
 
-<<<<<<< HEAD:emu/Nt/devfs.c
-	rem = 1;
-	n = 0;
-	while(rem != n){
-		i = net.UserGetLocalGroups(srv, u->name, 0, LG_INCLUDE_INDIRECT,
-			(BYTE**)&loc, 1024, &n, &rem);
-		if(i != NERR_Success && i != ERROR_MORE_DATA)
-			break;
-=======
 	n = 0;
 	i = net.UserGetLocalGroups(srv, u->name, 0, LG_INCLUDE_INDIRECT,
 		(BYTE**)&loc, MAX_PREFERRED_LENGTH, &n, &rem);
 	if(i == NERR_Success || i == ERROR_MORE_DATA){
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:emu/Nt/devfs.c
 		for(i = 0; i < n; i++){
 			gu = domnametouser(srv, loc[i].lgrui0_name, u->dom);
 			if(gu == NULL)

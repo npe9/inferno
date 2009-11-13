@@ -40,7 +40,7 @@ to register it with a
 and to export and serve its namespace across
 .IR dial (2) 
 network connections. Incoming connections may also be displayed visually using
-.IR monitor (1).
+.IR grid-monitor (1).
 For example:
 .PP
 .BI "grid/register [" " options ..." " ] { grid/srv/ns " "paths..." " } | grid/srv/monitor 1 'NS resource'
@@ -56,23 +56,12 @@ if possible and start up the graphical display to show connections to the resour
 outside of
 .I runns
 unless the namespace it provides is required to be accessible in a different way to that provided by
-<<<<<<< HEAD:man/1/grid-ns
-.IR register (1).
-=======
 .IR grid-register (1).
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:man/1/grid-ns
 .SH SOURCE
 .B /appl/grid/srv/ns.b
 
 .SH "SEE ALSO"
-<<<<<<< HEAD:man/1/grid-ns
-.IR cpu (4),
-.IR grid-monitor (1),
-.IR grid-register (1),
-.IR session (1)
-=======
 .IR grid-cpu (4),
 .IR grid-monitor (1),
 .IR grid-register (1),
 .IR grid-session (1)
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:man/1/grid-ns

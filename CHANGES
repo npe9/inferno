@@ -1,5 +1,117 @@
-=======
-TODO: sort
+20091004
+	restore "keyring" to lib section of emu/Plan9/emu
+20090930
+	emu/*/ipif*.c make "hangup" act as in native Inferno; also delete unused so_setsockopt
+	provide correct version of devmnt.c
+20090928
+	update import(4) to remove the restriction to Plan 9 (can use Inferno's own factotum)
+	(emu os)^/port/devmnt.c fix from plan 9 (don't access vanished data)
+20090830
+	check subexp length in ed [cmbrannon79]
+20090825
+	add netmkaddr call to /appl/cmd/ftpfs.b; send errors to standard error
+20090824
+	delete unused (and somewhat incomplete) pin support
+20090822
+	in the what were we thinking dept: appl/cmd/touch.b and dis/touch.dis updated to avoid using an Arg after nil'ing it [thanks to cmbrannon]
+	make progmode propagate to pgrps; recover from exceptions in pgrp creation
+20090821
+	emu/Nt/^(os.c ie-os.c) add #include <excpt.h>
+20090819
+	appl/cmd/mk/mk.b replace maketmp/mktemp (issue 202, mechiel); also old change: don't persist with bulkmtime on non-directories
+20090816
+	registry(4) Event.post increased rootvers when entries are written or removed (issue 179, powerman)
+20090809
+	bring mkfs(8) up to date (issue 176)
+	remove -q options from mkfs and mkext (-q was a transitional option to suppress quoting of file names)
+20090806
+	increase `backlog' value in all listen calls in hosted Inferno (emu/*/ipif*.c) [powerman]
+20090805
+	further checking added to libinterp/keyring.c: rejects incorrect states and out of bounds values of f->n
+	add lib/emptydirs and mkdirs target to /mkfile (utils/mkdir needs to be changed for Windows use)
+20090730
+	improve the error checking in strtosk and strtopk to help detect mangled or inappropriate keys
+20090728
+	emu/port/main.c: put host's working directory name as emuwdir
+	document initial environment variables in emu(1)
+	appl/lib/bufio.b dis/lib/bufio.dis [issue 199] don't lose track of actual file seek offset (following second suggestion of mjl)
+	issue 196: after general apologies for appl/svc/httpd/cache.b (don't look if you don't need it, not one of ours, etc. etc.) will patch as suggested by extrudedaluminiu(!) [vs]
+20090719
+	correct order of operands to memset(!), eg in ipif [mjl]
+20090718
+	fix appl/cmd/stream.b error exits to include fail: [mjl]
+20090717
+	fix appl/lib/ip.b (see issue 186) [mjl]
+	re-enable XK_ keys in port/win-x11a.c [mjl]
+20090716
+	add segflush calls to comp-386.c [probably need different name eventually to avoid time wasting when not needed]
+20090630
+	add sig (see man(1)) [via p9p and caerwyn]
+20090627
+	push changes described for arm in 20090330 (but not previously pushed)
+	begin change of inferno-os.googlecode.com from svn to mercurial
+200090612
+	added support for Linux-power (ericvh; and further simplified)
+20090605
+	appl/cmd/disk/kfs.b dis/disk/kfs.dis - don't try to update super block if readonly(!) [issue 175]
+20090526
+	emu/Nt/os.c allow /dev/hoststdin input on file or pipe (thanks to caerwyn, issue 173)
+	emu/port/devfs-posix.c correct handling of error return from pread (issue 172, but goes beyond that)
+	emu/port/exportfs.c os/port/exportfs.c use vlong for offset
+20090524
+	appl/cmd/tarfs.b dis/tarfs.dis - remove accidentally small limit on file size in tar file (issue 172)
+20090521
+	module/vac.m appl/cmd/vacfs.b appl/lib/vac.b [issue 152] (Mecchiel)
+20090505
+	add -h/-t header/trailer options to man2html
+20090430
+	filter-deflate(2), appl/lib/^(inflate.b deflate.b): changes from mjl to support zlib headers for deflate streams as well as gzip's
+20090417
+	add m4(1) in its initial form (might split the macro processing proper off into a library module)
+20090409
+	tools/odbc/odbc.c data read should return 0 if no columns or rows (issue 170)
+20090408
+	tools/odbc/odbc.c use strecpy and more care in allocation (issue 169)
+20090403
+	change ,2 to ,#function in Solaris sparc assembler files (apparently works in gcc and sun's)
+	make appl/wm/brutus.b pass input to its widgets (issue 105)
+	enable fullscreen mode in MacOSX (issue 148)
+20090402
+	add missing emu/Linux/segflush-*.c files and remove ARM segflush from os.c
+20090402
+	ramfile and logfile shouldn't set Sys->MCREATE (issue 137)
+20090401
+	appl/cmd/limbo/typecheck.b check correctly for function prevented from inline expansion
+20090330
+	use (low, high) order for words in vlong and fp on arm: libinterp/comp-arm.c, Inferno/arm/include/^(lib9.h u.h)
+		also os/*/fpi.h (for arm platforms), exchanging order of ulongs in Double
+		also libkern/^(vlrt-arm.c vlop-arm.s vlop-thumb.s frexp-arm.c frexp-thumb.c)
+	include changes from richard miller for little-endian mips (spim) and Linux/spim hosted
+	libmath/dtoa.c: use simpler code to avoid gcc bug on mips and perhaps other platforms (rmiller)
+20090330-branches/forse
+	include appl/cmd/ssh source (won't compile here because it needs the keyring changes)
+20090325-branches/forse
+	emu/* adopt changes to Chan (Dev* dev pointer instead of int type)
+20090320
+	emu/port/win-x11a.c: unintuitively use xdisplay not xkbdcon to send to kbdproc (with big stack) to change cursor
+		(the big stack is needed because XCreateBitmapFromData and XPutImage pass control to theme-related code that uses lots of stack space)
+	use uname not aname for user name in libstyx and set aname to "" by default
+	make odbc's new file have mode 666 so others can open it
+	add styxsetowner function to styxserver.h to set default owner (eve)
+	move styxserver.h to inferno's include directory
+20090222
+	appl/cmd/ndb/registry.b and dis/registry.dis - implement flush for event file (issue 162)
+20090217
+	appl/cmd/limbo/stubs.b limbo/stubs.c - include length parameter to builtinmod (could just be 0 in most cases)
+	change f->ret/destroy code in stubs.c/stubs.b to destroy correctly in case of exceptions
+20090202
+	emu/port/win-x11a.c: might as well try this everywhere now
+20090127
+	libinterp/xec.c: fix gc problem with self
+20090122
+	libinterp/string.c: slicer can return H for empty slice after bounds check (brucee)
+20081119
+	os/pc/^(main.c fns.h) more idle idlehands
 20081112
 	emu/Linux/asm-arm.S old failure to use different regs for swp finally changed here
 	libmath/blas.c compensate for gcc bug on arm

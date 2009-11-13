@@ -330,18 +330,6 @@ senderr(io: ref IO, e: string)
 	io.write(buf, len buf);
 }
 
-<<<<<<< HEAD:appl/cmd/auth/factotum/proto/infauth.b
-keytoauthinfo(key:ref Key): (ref Keyring->Authinfo, string)
-{
-	if((s := authio->lookattrval(key.secrets, "!authinfo")) == nil){
-		# XXX could look up authinfo by hash at this point
-		return (nil, "no authinfo attribute");
-	}
-
-	return strtoauthinfo(s);
-}
-
-=======
 # both the s-expression and k=v form are interim, until all
 # the factotum implementations can manage public keys
 # the s-expression form was the original one used by Inferno factotum
@@ -382,7 +370,6 @@ rnl(s: string): string
 }
 
 # s-expression form
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:appl/cmd/auth/factotum/proto/infauth.b
 strtoauthinfo(s: string): (ref Keyring->Authinfo, string)
 {
 	(se, err, nil) := Sexp.parse(s);

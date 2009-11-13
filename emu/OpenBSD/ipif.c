@@ -54,7 +54,7 @@ so_send(int sock, void *va, int len, void *hdr, int hdrlen)
 	if(hdr == 0)
 		r = write(sock, va, len);
 	else {
-		memset(&sa, sizeof(sa), 0);
+		memset(&sa, 0, sizeof(sa));
 		sin = (struct sockaddr_in*)&sa;
 		sin->sin_family = AF_INET;
 		switch(hdrlen){
@@ -94,7 +94,7 @@ so_recv(int sock, void *va, int len, void *hdr, int hdrlen)
 		l = sizeof(sa);
 		r = recvfrom(sock, va, len, 0, &sa, &l);
 		if(r >= 0) {
-			memset(h, sizeof h, 0);
+			memset(h, 0, sizeof(h));
 			switch(hdrlen){
 			case OUdphdrlenv4:
 				memmove(h, &sin->sin_addr, 4);
@@ -186,7 +186,7 @@ so_listen(int fd)
 	int r;
 
 	osenter();
-	r = listen(fd, 5);
+	r = listen(fd, 256);
 	osleave();
 	if(r < 0)
 		oserror();
@@ -253,24 +253,6 @@ so_bind(int fd, int su, unsigned long addr, unsigned short port)
 		oserror();
 }
 
-void
-so_setsockopt(int fd, int opt, int value)
-{
-	int r;
-	struct linger l;
-
-	if(opt == SO_LINGER){
-		l.l_onoff = 1;
-		l.l_linger = (short) value;
-		osenter();
-		r = setsockopt(fd, SOL_SOCKET, opt, (char *)&l, sizeof(l));
-		osleave();
-	}else
-		error(Ebadctl);
-	if(r < 0)
-		oserror();
-}
-
 int
 so_gethostbyname(char *host, char**hostv, int n)
 {
@@ -334,13 +316,13 @@ so_getservbyname(char *service, char *net, char *port)
 }
 
 int
-so_hangup(int fd, int linger)
+so_hangup(int fd, int nolinger)
 {
 	int r;
-	static struct linger l = {1, 1000};
+	static struct linger l = {1, 0};
 
 	osenter();
-	if(linger)
+	if(nolinger)
 		setsockopt(fd, SOL_SOCKET, SO_LINGER, (char*)&l, sizeof(l));
 	r = shutdown(fd, 2);
 	if(r >= 0)

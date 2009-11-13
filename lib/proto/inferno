@@ -21,6 +21,18 @@ Linux
 		bin
 		include
 		lib
+	arm
+		bin
+		include
+		lib
+	power
+		bin
+		include
+		lib
+	spim
+		bin
+		include
+		lib
 MacOSX
 	386
 		bin
@@ -606,6 +618,7 @@ appl
 		look.b
 		ls.b
 		lstar.b
+		m4.b
 		man2html.b
 		man2txt.b
 		manufacture.b
@@ -1234,8 +1247,6 @@ appl
 			spider.b
 			spit.b
 			whist.b
-		man
-			+
 		lib
 			allow.b
 			allow.m
@@ -1747,6 +1758,7 @@ dis
 	lookman
 	ls.dis
 	lstar.dis
+	m4.dis
 	man
 	man2html.dis
 	man2txt.dis
@@ -2030,11 +2042,7 @@ keydb
 	keys 600 inferno inferno /keydb/keys.dist
 	signed
 lib
-	legal
-		*
 	acid
-		+
-	brutus
 		+
 	convcs
 		+
@@ -2042,9 +2050,12 @@ lib
 		+
 	ebooks
 		+
+	emptydirs
 	games
 		+
 	keyboard
+	legal
+		*
 	lego
 		*
 	mashinit

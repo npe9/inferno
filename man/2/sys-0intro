@@ -76,14 +76,6 @@ Also, these same calls create
 \f2union directories\fP,
 which are concatenations of ordinary directories
 that are searched sequentially until the desired element is found.
-<<<<<<< HEAD:man/2/sys-0intro
-.PP
-The result of evaluating
-.B \&..
-in a union directory is undefined.
-.PP
-=======
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:man/2/sys-0intro
 Using
 .B bind
 and
@@ -91,12 +83,6 @@ and
 to do name space adjustment affects only
 the current name space group (see below, and
 .IR sys-pctl (2)).
-<<<<<<< HEAD:man/2/sys-0intro
-.PP
-Certain conventions about the layout of the name space should be preserved;
-see
-.IR namespace (4).
-=======
 Certain conventions about the layout of the name space should be preserved;
 see
 .IR namespace (4).
@@ -139,7 +125,6 @@ and
 .IR cs (8)
 amongst others use `!' as a delimiter in network names,
 preventing their use in the names of network devices.
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:man/2/sys-0intro
 .SS "File I/O"
 Files are opened for input or output
 by
@@ -160,11 +145,7 @@ and
 .IR sys-read (2)).
 When the last reference to an
 .B FD
-<<<<<<< HEAD:man/2/sys-0intro
-disappears, the file descriptor is released\(emclosed, in Unix parlance.
-=======
 disappears, the file descriptor is released—closed, in Unix parlance.
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:man/2/sys-0intro
 The
 .B FD
 contains an integer file descriptor, similar to those in Unix, but the
@@ -209,8 +190,6 @@ and may be set arbitrarily using the
 .B seek
 system call
 .RI ( sys-seek (2)).
-<<<<<<< HEAD:man/2/sys-0intro
-=======
 An offset can also be passed as a parameter to
 .B pread
 and
@@ -236,7 +215,6 @@ Atomicity is guaranteed for byte counts smaller than the
 message size;
 see
 .IR read (5).
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:man/2/sys-0intro
 .PP
 Directories may be opened and read
 much like regular files (see
@@ -273,35 +251,13 @@ and deleted with
 .IR sys-open (2)
 and
 .IR sys-remove (2)).
-<<<<<<< HEAD:man/2/sys-0intro
-.PP
-Directories are manipulated by
-=======
 Directories may not directly be written;
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:man/2/sys-0intro
 .BR create ,
 .BR remove ,
 .BR wstat ,
 and
-<<<<<<< HEAD:man/2/sys-0intro
-.BR fwstat ;
-they may not directly be written.
-.PP
-Inferno provides no guarantee of consistency should
-several processes access a file concurrently.
-Guaranteed synchronous writes are not available.
-Nor is file locking from underlying file systems supported by Inferno.
-Processes can coordinate their file operations by other mechanisms.
-.PP
-Atomicity is guaranteed for byte counts smaller than the
-.I Styx
-message size;
-see
-.IR read (5).
-=======
 .B fwstat
 change them.
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:man/2/sys-0intro
 .SS "Process execution and control"
 A Limbo
 .IR process ,
@@ -353,11 +309,7 @@ and
 A comparison of process and file identities take place when a process
 attempts to open or create a file.
 .PP
-<<<<<<< HEAD:man/2/sys-0intro
-When a pathname crosses from one server to another the process identities are
-=======
 When a path name crosses from one server to another the process identities are
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:man/2/sys-0intro
 mapped by each server receiving a file request.
 .PP
 The

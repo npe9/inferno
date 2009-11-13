@@ -5,7 +5,6 @@ export \- export name space on a connection
 .B export
 [
 .B \-a
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:man/4/export
 ]
 .I dir
 [
@@ -38,8 +37,6 @@ will be visible to clients.
 .I Export
 starts serving Styx immediately; it assumes that the connection
 has been authenticated if required.
-<<<<<<< HEAD:man/4/export
-=======
 .I Export
 is typically called via
 .IR listen (1),
@@ -55,9 +52,6 @@ unless a transport protocol is run on the connection.
 .B /appl/cmd/export.b
 .SH SEE ALSO
 .IR cpu (1),
-<<<<<<< HEAD:man/4/export
-=======
 .IR listen (1),
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:man/4/export
 .IR sys-dial (2),
 .IR intro (5)

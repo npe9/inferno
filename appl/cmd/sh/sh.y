@@ -362,11 +362,7 @@ runfile(ctxt: ref Context, fd: ref Sys->FD, path: string, args: list of ref List
 						laststatus = walk(ctxt, n, 0);
 					} exception e2 {
 					"fail:*" =>
-<<<<<<< HEAD:appl/cmd/sh/sh.y
-						laststatus = e2[5:];
-=======
 						laststatus = failurestatus(e2);
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:appl/cmd/sh/sh.y
 					}
 				} else
 					laststatus = walk(ctxt, n, 0);
@@ -888,11 +884,7 @@ runexternal(ctxt: ref Context, args: list of ref Listnode, last: int): string
 				EPIPE =>
 					return EPIPE;
 				"fail:*" =>
-<<<<<<< HEAD:appl/cmd/sh/sh.y
-					return e[5:];
-=======
 					return failurestatus(e);
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:appl/cmd/sh/sh.y
 				}
 			}
 			extstart := chan of int;
@@ -919,8 +911,6 @@ runexternal(ctxt: ref Context, args: list of ref Listnode, last: int): string
 	return err;
 }
 
-<<<<<<< HEAD:appl/cmd/sh/sh.y
-=======
 failurestatus(e: string): string
 {
 	s := e[5:];
@@ -931,7 +921,6 @@ failurestatus(e: string): string
 	return "failed";
 }
 
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:appl/cmd/sh/sh.y
 runhashpling(ctxt: ref Context, fd: ref Sys->FD,
 		path: string, argv: list of ref Listnode, last: int): string
 {
@@ -1140,11 +1129,7 @@ waitfor(ctxt: ref Context, pids: list of int): string
 		(who, line, s) := parsewaitstatus(ctxt, string buf[0:n]);
 		if (s != nil) {
 			if (len s >= 5 && s[0:5] == "fail:")
-<<<<<<< HEAD:appl/cmd/sh/sh.y
-				s = s[5:];
-=======
 				s = failurestatus(s);
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:appl/cmd/sh/sh.y
 			else
 				diagnostic(ctxt, line);
 		}
@@ -2074,11 +2059,7 @@ builtin_run(ctxt: ref Context, args: list of ref Listnode, nil: int): string
 	} exception e {
 	"fail:*" =>
 		ctxt.pop();
-<<<<<<< HEAD:appl/cmd/sh/sh.y
-		return e[5:];
-=======
 		return failurestatus(e);
->>>>>>> 643187cc7e0f0ac3f940ad2e4de0d9a6747ef98a:appl/cmd/sh/sh.y
 	}
 }
 
