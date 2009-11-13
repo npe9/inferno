@@ -116,6 +116,15 @@ trapSEGV(int signo)
 	disfault(nil, "Segmentation violation");
 }
 
+#include <fpuctl.h>
+void
+trapFPE(int signo)
+{
+	USED(signo);
+	print("FPU status=0x%.4lux", getfsr());
+	disfault(nil, "Floating point exception");
+}
+
 static sigset_t initmask;
 
 static void
@@ -161,6 +170,9 @@ setsigs(void)
 		act.sa_handler = trapSEGV;
 		if(sigaction(SIGSEGV, &act, nil))
 			panic("sigaction SIGSEGV");
+		act.sa_handler = trapFPE;
+		if(sigaction(SIGFPE, &act, nil))
+			panic("sigaction SIGFPE");
 		if(sigaddset(&initmask, SIGINT) == -1)
 			panic("sigaddset");
 	}
