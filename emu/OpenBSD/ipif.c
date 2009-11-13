@@ -5,6 +5,7 @@
 #include	<net/if_arp.h>
 #include	<netinet/in.h>
 #include	<netinet/tcp.h>
+#include	<arpa/inet.h>
 #include	<netdb.h>
 #include        "dat.h"
 #include        "fns.h"
