@@ -16,6 +16,8 @@ include "keyring.m";
 	keyring: Keyring;
 include "security.m";
 	auth: Auth;
+include "dial.m";
+	dial: Dial;
 
 Lockfs: module {
 	init: fn(nil: ref Draw->Context, argv: list of string);
@@ -97,6 +99,9 @@ init(nil: ref Draw->Context, argv: list of string)
 	styx = load Styx Styx->PATH;
 	if (styx == nil)
 		badmodule(Styx->PATH);
+	dial = load Dial Dial->PATH;
+	if (dial == nil)
+		badmodule(Dial->PATH);
 	styx->init();
 	styxlib = load Styxlib Styxlib->PATH;
 	if (styxlib == nil)
@@ -636,16 +641,16 @@ revrqlist(ls: list of ref Openreq) : list of ref Openreq
 listener(addr: string, ch: chan of (ref Sys->FD, string, Uproc),
 		sync: chan of (int, string), algs: list of string)
 {
-	addr = netmkaddr(addr, "tcp", "33234");
-	(ok, c) := sys->announce(addr);;
-	if (ok == -1) {
+	addr = dial->netmkaddr(addr, "tcp", "33234");
+	c := dial->announce(addr);
+	if (c == nil) {
 		sync <-= (-1, sys->sprint("cannot anounce on %s: %r", addr));
 		return;
 	}
 	sync <-= (sys->pctl(0, nil), nil);
 	for (;;) {
-		(n, nc) := sys->listen(c);
-		if (n == -1) {
+		nc := dial->listen(c);
+		if (nc == nil) {
 			ch <-= (nil, sys->sprint("listen failed: %r"), nil);
 			return;
 		}

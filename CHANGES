@@ -1,3 +1,24 @@
+20100110
+	appl/cmd/tcs.b [issue 12, arvindht]: process unconverted bytes next cycle, flush conversion state; improve error checking
+20091219
+	change default roots in Nt utils to c:\inferno
+20091215
+	factotum(2) updated to include keyspec in signature
+	appl/cmd/mount.b uses -k value as keyspec if -9 selected [not to much purpose with current factotum's p9any]
+	bind(1) [for mount] updated to describe -k used for keyspec if -9 selected
+20091214
+	switch more commands to use dial(2)
+	change emu/Linux/emu-g not to require X11 libs (again)
+20091213
+	temper the tendancy of port/dis.c to yield during idle gc: it's compensating for os scheduling, but yield less often
+20091208
+	add mkdir -p to makemk.sh to ensure output directories exist [issue 213]
+20091127
+	problems fixed in styxconv(2), which can now convert both ways [rog]
+20091119
+	emu/port/devfs-posix.c	missing waserror in dirread (obscure but possible failure)
+20091007
+	remove intermediate exception-raising function from charon implementation
 20091004
 	restore "keyring" to lib section of emu/Plan9/emu
 20090930
