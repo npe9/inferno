@@ -47,31 +47,6 @@ isdotdot(char *p)
 	return p[0]=='.' && p[1]=='.' && p[2]=='\0';
 }
 
-int
-incref(Ref *r)
-{
-	int x;
-
-	lock(&r->lk);
-	x = ++r->ref;
-	unlock(&r->lk);
-	return x;
-}
-
-int
-decref(Ref *r)
-{
-	int x;
-
-	lock(&r->lk);
-	x = --r->ref;
-	unlock(&r->lk);
-	if(x < 0) 
-		panic("decref, pc=0x%lux", getcallerpc(&r));
-
-	return x;
-}
-
 /*
  * Rather than strncpy, which zeros the rest of the buffer, kstrcpy
  * truncates if necessary, always zero terminates, does not zero fill,

@@ -20,6 +20,7 @@ X11LIBS= -lX11 -lXext	# can remove or override using env section in config files
 
 OBJ=\
 	asm-$OBJTYPE.$O\
+    os-$OBJTYPE.$O\
 	os.$O\
 	segflush-$OBJTYPE.$O\
 	$CONF.root.$O\

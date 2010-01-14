@@ -150,7 +150,7 @@ void*	vmap(ulong, int);
 void	vunmap(void*, int);
 void	wrmsr(ulong, ulong);
 int	xchgw(ushort*, int);
-ulong	xaddw(ulong*, ulong);
+int	xadd(int*, int);
 ulong	kzeromap(ulong, ulong, int);
 void	nmiscreen(void);
 int	kbdinready(void);

@@ -602,7 +602,7 @@ TEXT xchgw(SB), $0
 	XCHGW	AX, (BX)
 	RET
 
-TEXT	xaddw(SB), $0
+TEXT _xadd(SB), $0
 	MOVL	v+4(FP), AX
 	MOVL	p+0(FP), BX
 	XADDW	AX, (BX)
