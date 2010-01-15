@@ -36,5 +36,5 @@ TEXT	FPrestore(SB), 1, $0
 TEXT _xadd(SB), $0          /* long _xadd(long *, long) */
     MOVL    v+4(FP), AX
     MOVL    p+0(FP), BX
-    XADDW   AX, (BX)
+    LOCK;   XADDW   AX, (BX)
     RET

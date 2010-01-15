@@ -107,5 +107,5 @@ _tas:
 _xadd:
     movl    8(%esp), %eax      
     movl    4(%esp), %ecx
-    xaddl   %eax, 0(%ecx)
+    lock xaddl   %eax, 0(%ecx)
     ret
