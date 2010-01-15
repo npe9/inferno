@@ -3,6 +3,7 @@
 #include	"error.h"
 #undef _POSIX_C_SOURCE 
 #undef getwd
+#define __EXTENSIONS__
 #include	<unistd.h>
 #include	<thread.h>
 #include	<time.h>
