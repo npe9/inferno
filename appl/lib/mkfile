@@ -120,6 +120,7 @@ TARG=\
 	styxlib.dis\
 	styxpersist.dis\
 	styxservers.dis\
+	sync.dis\
 	tables.dis\
 	tabs.dis\
 	tftp.dis\
