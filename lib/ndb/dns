@@ -17,7 +17,7 @@ dom=
 	ns=j.root-servers.net
 	ns=k.root-servers.net
 dom=a.root-servers.net ip=198.41.0.4
-dom=b.root-servers.net ip=128.9.0.107
+dom=b.root-servers.net ip=192.228.79.201
 dom=c.root-servers.net ip=192.33.4.12
 dom=d.root-servers.net ip=128.8.10.90
 dom=e.root-servers.net ip=192.203.230.10
@@ -25,7 +25,7 @@ dom=f.root-servers.net ip=192.5.5.241
 dom=g.root-servers.net ip=192.112.36.4
 dom=h.root-servers.net ip=128.63.2.53
 dom=i.root-servers.net ip=192.36.148.17
-dom=j.root-servers.net ip=198.41.0.10
+dom=j.root-servers.net ip=192.58.128.30
 dom=k.root-servers.net ip=193.0.14.129
-dom=l.root-servers.net ip=198.32.64.12
+dom=l.root-servers.net ip=199.7.83.42
 dom=m.root-servers.net ip=202.12.27.33
