@@ -13,7 +13,7 @@ dev
 	cmd	cmd
 	indir
 
-	ip	ipif ipaux
+	ip	ipif6-posix ipaux
 	eia
 	mem
 
