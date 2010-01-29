@@ -12,6 +12,7 @@ dev
 	fs
 	cmd	cmd
 	indir
+	serve
 
 	ip	ipif6-posix ipaux
 	eia

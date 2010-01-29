@@ -13,6 +13,7 @@ dev
 	fs
 	cmd	cmd
 	indir
+	serve
 
 	draw	win-x11a
 	pointer

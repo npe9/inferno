@@ -12,6 +12,7 @@ dev
 	fs
 	cmd	cmd
 	indir
+	serve
 	sign
 
 	draw	win
