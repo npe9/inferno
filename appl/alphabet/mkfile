@@ -1,11 +1,11 @@
 <../../mkconfig
 DIRS=\
-	typesets\
+#	typesets\
 	auxi\
 	abc\
 	fs\
 	grid\
-	main\
+#	main\
 
 TARG=\
 	alphabet.dis\
