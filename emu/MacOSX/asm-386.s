@@ -27,10 +27,9 @@ __tas:
 	xchgl	%eax, 0(%ecx)
 	ret
 
-    .globl  _xadd
+	.globl	__xadd
 __xadd:
-    movl    8(%esp), %eax
-    movl    4(%esp), %ecx
-    lock xaddl   %eax, 0(%ecx)
-    ret
-
+	movl	8(%esp), %eax
+	movl	4(%esp), %ecx
+	lock	xaddl	%eax, 0(%ecx)
+	ret
