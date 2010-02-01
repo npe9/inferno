@@ -65,17 +65,6 @@ pexit(char *msg, int t)
 		stackfreeandexit(kstack);
 }
 
-void
-trapBUS(int signo, siginfo_t *info, void *context)
-{
-	if(info)
-		print("trapBUS: signo: %d code: %d addr: %lx\n",
-		info->si_signo, info->si_code, info->si_addr);
-	else
-		print("trapBUS: no info\n"); 
-	disfault(nil, "Bus error");
-}
-
 static void
 trapUSR1(int signo)
 {
@@ -99,16 +88,52 @@ trapUSR2(int signo)
 	/* we've done our work of interrupting sigsuspend */
 }
 
+
 static void
-trapILL(int signo)
+diserr(char *msg, siginfo_t *si)
 {
-	disfault(nil, "Illegal instruction");
+	char buf[128];
+
+	if(si != nil) {
+		snprint(buf, sizeof buf, "%s, addr=%p", msg, si->si_addr);
+		disfault(nil, buf);
+	} else
+		disfault(nil, msg);
 }
 
 static void
-trapSEGV(int signo)
+trapBUS(int signo, siginfo_t *si, void *context)
 {
-	disfault(nil, "Segmentation violation");
+	USED(signo);
+	USED(context);
+	diserr("Bus error", si);
+}
+
+static void
+trapILL(int signo, siginfo_t *si, void *context)
+{
+	USED(signo);
+	USED(context);
+	diserr("Illegal instruction", si);
+}
+
+static void
+trapSEGV(int signo, siginfo_t *si, void *context)
+{
+	USED(signo);
+	USED(context);
+	diserr("Segmentation violation", si);
+}
+
+#include <fpuctl.h>
+void
+trapFPE(int signo, siginfo_t *si, void *context)
+{
+	USED(signo);
+	USED(context);
+
+	print("FPU status=0x%.4lux\n", getfsr());
+	diserr("Floating point exception", si);
 }
 
 static sigset_t initmask;
@@ -146,16 +171,19 @@ setsigs(void)
 		panic("sigaction SIGCHLD");
 
 	if(sflag == 0) {
-		act.sa_sigaction = trapBUS;
 		act.sa_flags |= SA_SIGINFO;
+		act.sa_sigaction = trapBUS;
 		if(sigaction(SIGBUS, &act, nil))
 			panic("sigaction SIGBUS");
-		act.sa_handler = trapILL;
+		act.sa_sigaction = trapILL;
 		if(sigaction(SIGILL, &act, nil))
-			panic("sigaction SIGBUS");
-		act.sa_handler = trapSEGV;
+			panic("sigaction SIGILL");
+		act.sa_sigaction = trapSEGV;
 		if(sigaction(SIGSEGV, &act, nil))
 			panic("sigaction SIGSEGV");
+		act.sa_sigaction = trapFPE;
+		if(sigaction(SIGFPE, &act, nil))
+			panic("sigaction SIGFPE");
 		if(sigaddset(&initmask, SIGINT) == -1)
 			panic("sigaddset");
 	}
