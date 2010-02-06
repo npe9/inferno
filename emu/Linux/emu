@@ -25,6 +25,7 @@ dev
 	mem
 
 lib
+	avl
 	interp
 	tk
 	freetype
