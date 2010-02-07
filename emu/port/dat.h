@@ -16,6 +16,7 @@ typedef struct Mntwalk	Mntwalk;
 typedef struct Mnt	Mnt;
 typedef struct Mhead	Mhead;
 typedef struct Osenv	Osenv;
+typedef struct objcache objcache;
 typedef struct Pgrp	Pgrp;
 typedef struct Proc	Proc;
 typedef struct Queue	Queue;
@@ -23,7 +24,6 @@ typedef struct Ref	Ref;
 typedef struct Rendez	Rendez;
 typedef struct Rept	Rept;
 typedef struct Rootdata Rootdata;
-/*typedef struct RWlock	RWlock;*/
 typedef struct RWLock	RWlock;
 typedef struct Procs	Procs;
 typedef struct Signerkey Signerkey;
@@ -39,6 +39,7 @@ typedef struct Walkqid	Walkqid;
 
 #pragma incomplete Queue
 #pragma incomplete Mntrpc
+#pragma incomplete objcache
 
 #include "fcall.h"
 

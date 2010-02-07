@@ -200,6 +200,14 @@ void		validwstatname(char*);
 void		vmachine(void*);
 int		walk(Chan**, char**, int, int, int*);
 void		cleanexit(int);
+void		objcache_init(void);
+objcache*	objcache_create(char *, ulong, ulong,
+				int (*)(void*, void*),
+				void (*)(void *, void *),
+				void *);
+void* 		objcache_alloc(objcache*, int);
+void		objcache_free(objcache*, void *);
+void		objcache_destroy(objcache*);
 void		oshostintr(Proc*);
 void		osenter(void);
 void		osleave(void);
