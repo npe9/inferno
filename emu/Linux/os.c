@@ -11,6 +11,7 @@
 #include	"dat.h"
 #include	"fns.h"
 #include	"error.h"
+#include <fpuctl.h>
 
 /* glibc 2.3.3-NTPL messes up getpid() by trying to cache the result, so we'll do it ourselves */
 #include	<sys/syscall.h>
@@ -150,6 +151,53 @@ kproc(char *name, void (*func)(void*), void *arg, int flags)
 	return 0;
 }
 
+/*
+ * TO DO:
+ * To get pc on trap, use sigaction instead of signal and
+ * examine its siginfo structure
+ */
+
+/*
+static void
+diserr(char *s, int pc)
+{
+	char buf[ERRMAX];
+
+	snprint(buf, sizeof(buf), "%s: pc=0x%lux", s, pc);
+	disfault(nil, buf);
+}
+*/
+
+static void
+trapILL(int signo)
+{
+	USED(signo);
+	disfault(nil, "Illegal instruction");
+}
+
+static void
+trapBUS(int signo)
+{
+	USED(signo);
+	disfault(nil, "Bus error");
+}
+
+static void
+trapSEGV(int signo)
+{
+	USED(signo);
+	disfault(nil, "Segmentation violation");
+}
+
+static void
+trapFPE(int signo)
+{
+	char buf[64];
+	USED(signo);
+	snprint(buf, sizeof(buf), "sys: fp: exception status=%.4lux", getfsr());
+	disfault(nil, buf);
+}
+
 static void
 trapUSR1(int signo)
 {
@@ -179,53 +227,6 @@ trapUSR2(int signo)
 {
 	USED(signo);
 	/* we've done our work of interrupting sigsuspend */
-}
-
-static void
-diserr(char *msg, siginfo_t *si)
-{
-	char buf[128];
-
-	if(si != nil) {
-		snprint(buf, sizeof buf, "%s, addr=%p", msg, si->si_addr);
-		disfault(nil, buf);
-	} else
-		disfault(nil, msg);
-}
-
-static void
-trapBUS(int signo, siginfo_t *si, void *context)
-{
-	USED(signo);
-	USED(context);
-	diserr("Bus error", si);
-}
-
-static void
-trapILL(int signo, siginfo_t *si, void *context)
-{
-	USED(signo);
-	USED(context);
-	diserr("Illegal instruction", si);
-}
-
-static void
-trapSEGV(int signo, siginfo_t *si, void *context)
-{
-	USED(signo);
-	USED(context);
-	diserr("Segmentation violation", si);
-}
-
-#include <fpuctl.h>
-void
-trapFPE(int signo, siginfo_t *si, void *context)
-{
-	USED(signo);
-	USED(context);
-
-	print("FPU status=0x%.4lux\n", getfsr());
-	diserr("Floating point exception", si);
 }
 
 void
@@ -291,6 +292,10 @@ cleanexit(int x)
 void
 osreboot(char *file, char **argv)
 {
+	if(dflag == 0)
+		termrestore();
+	execvp(file, argv);
+	error("reboot failure");
 }
 
 void
@@ -343,19 +348,14 @@ libinit(char *imod)
 		signal(SIGINT, cleanexit);
 
 	if(sflag == 0) {
-		act.sa_flags |= SA_SIGINFO;
-		act.sa_sigaction = trapBUS;
-		if(sigaction(SIGBUS, &act, nil))
-			panic("sigaction SIGBUS");
-		act.sa_sigaction = trapILL;
-		if(sigaction(SIGILL, &act, nil))
-			panic("sigaction SIGILL");
-		act.sa_sigaction = trapSEGV;
-		if(sigaction(SIGSEGV, &act, nil))
-			panic("sigaction SIGSEGV");
-		act.sa_sigaction = trapFPE;
-		if(sigaction(SIGFPE, &act, nil))
-			panic("sigaction SIGFPE");
+		act.sa_handler = trapBUS;
+		sigaction(SIGBUS, &act, nil);
+		act.sa_handler = trapILL;
+		sigaction(SIGILL, &act, nil);
+		act.sa_handler = trapSEGV;
+		sigaction(SIGSEGV, &act, nil);
+		act.sa_handler = trapFPE;
+		sigaction(SIGFPE, &act, nil);
 	}
 
 	p = newproc();

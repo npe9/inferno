@@ -18,13 +18,15 @@ CFLAGS=	-g\
 		-I$ROOT/DragonFly/386/include\
 		-I$ROOT/include\
 		-I/usr/local/include\
- 		-I/usr/pkg/include\
+ 		-I/usr/X11R6/include\
+	        -I/usr/pkg/include\
 		-DDragonFly_386
 
 ANSICPP=
 LD=		cc
 LDFLAGS=	-L/usr/openwin/lib\
 		-L/usr/local/lib\
+		-L/usr/X11R6/lib\
 		-L/usr/pkg/lib\
 
 SYSLIBS=

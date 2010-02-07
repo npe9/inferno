@@ -12,6 +12,7 @@
 #include	<errno.h>
 #include	<unistd.h>
 #include	<sys/resource.h>
+#include 	<fpuctl.h>
 
 enum
 {
@@ -65,6 +66,17 @@ pexit(char *msg, int t)
 		stackfreeandexit(kstack);
 }
 
+void
+trapBUS(int signo, siginfo_t *info, void *context)
+{
+	if(info)
+		print("trapBUS: signo: %d code: %d addr: %lx\n",
+		info->si_signo, info->si_code, info->si_addr);
+	else
+		print("trapBUS: no info\n"); 
+	disfault(nil, "Bus error");
+}
+
 static void
 trapUSR1(int signo)
 {
@@ -88,52 +100,25 @@ trapUSR2(int signo)
 	/* we've done our work of interrupting sigsuspend */
 }
 
-
 static void
-diserr(char *msg, siginfo_t *si)
+trapILL(int signo)
 {
-	char buf[128];
-
-	if(si != nil) {
-		snprint(buf, sizeof buf, "%s, addr=%p", msg, si->si_addr);
-		disfault(nil, buf);
-	} else
-		disfault(nil, msg);
+	disfault(nil, "Illegal instruction");
 }
 
 static void
-trapBUS(int signo, siginfo_t *si, void *context)
+trapSEGV(int signo)
 {
-	USED(signo);
-	USED(context);
-	diserr("Bus error", si);
+	disfault(nil, "Segmentation violation");
 }
 
 static void
-trapILL(int signo, siginfo_t *si, void *context)
+trapFPE(int signo)
 {
+	char buf[64];
 	USED(signo);
-	USED(context);
-	diserr("Illegal instruction", si);
-}
-
-static void
-trapSEGV(int signo, siginfo_t *si, void *context)
-{
-	USED(signo);
-	USED(context);
-	diserr("Segmentation violation", si);
-}
-
-#include <fpuctl.h>
-void
-trapFPE(int signo, siginfo_t *si, void *context)
-{
-	USED(signo);
-	USED(context);
-
-	print("FPU status=0x%.4lux\n", getfsr());
-	diserr("Floating point exception", si);
+	snprint(buf, sizeof(buf), "sys: fp: exception status=%.4lux", getfsr());
+	disfault(nil, buf);
 }
 
 static sigset_t initmask;
@@ -171,17 +156,17 @@ setsigs(void)
 		panic("sigaction SIGCHLD");
 
 	if(sflag == 0) {
-		act.sa_flags |= SA_SIGINFO;
 		act.sa_sigaction = trapBUS;
+		act.sa_flags |= SA_SIGINFO;
 		if(sigaction(SIGBUS, &act, nil))
 			panic("sigaction SIGBUS");
-		act.sa_sigaction = trapILL;
+		act.sa_handler = trapILL;
 		if(sigaction(SIGILL, &act, nil))
-			panic("sigaction SIGILL");
-		act.sa_sigaction = trapSEGV;
+			panic("sigaction SIGBUS");
+		act.sa_handler = trapSEGV;
 		if(sigaction(SIGSEGV, &act, nil))
 			panic("sigaction SIGSEGV");
-		act.sa_sigaction = trapFPE;
+		act.sa_handler = trapFPE;
 		if(sigaction(SIGFPE, &act, nil))
 			panic("sigaction SIGFPE");
 		if(sigaddset(&initmask, SIGINT) == -1)
