@@ -253,4 +253,9 @@ Cname*	addelem(Cname*, char*);
 void		cleancname(Cname*);
 void		cnameclose(Cname*);
 
+/* ksd.c */
+int 		ksd_key_create(void);
+void 		*ksd_getspecific(int key);
+void 		*ksd_setspecific(int key, void *val);
+
 #pragma varargck argpos iprint 1

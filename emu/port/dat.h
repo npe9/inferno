@@ -57,6 +57,10 @@ enum
 	READSTR		= 1000		/* temporary buffer size for device reads */
 };
 
+enum {
+	NKEYS		= 32
+};
+
 struct Ref
 {
 	Lock	lk;
@@ -404,6 +408,7 @@ struct Proc
 	int	nerr;		/* error stack SP */
 	osjmpbuf	estack[NERR];	/* vector of error jump labels */
 	char*	kstack;
+	void**	ksd;		/* Kproc-specific data area */
 	void	(*func)(void*);	/* saved trampoline pointer for kproc */
 	void*	arg;		/* arg for invoked kproc function */
 	void*	iprog;		/* work for Prog after release */
