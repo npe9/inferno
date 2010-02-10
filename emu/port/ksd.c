@@ -9,9 +9,10 @@
 #include "error.h"
 
 static Ref high_ksd;
+static void (*ksd_dtor[NKEYS])(void*);
 
 int
-ksd_key_create(void) 
+ksd_key_create(void (*destructor)(void *)) 
 {
 	int i;
 	i = incref(&high_ksd) - 1;
@@ -20,6 +21,8 @@ ksd_key_create(void)
 		decref(&high_ksd);
 		return -1;
 	}
+
+	ksd_dtor[i] = destructor;
 
 	return i;
 }
@@ -43,3 +46,12 @@ ksd_setspecific(int key, void *val)
 	return tmp;
 }
 
+void
+ksd_rundtors(void)
+{
+	int i;
+
+	for (i = 0; i < high_ksd.ref; i++)
+		if (ksd_dtor[i] != NULL)
+			ksd_dtor[i](up->ksd[i]);
+}
