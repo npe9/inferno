@@ -69,6 +69,7 @@ port
 	exception
 	exportfs
 	inferno
+	ksd
 	latin1
 	main
 	parse

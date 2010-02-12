@@ -60,6 +60,10 @@ pexit(char *msg, int t)
 		closeegrp(e->egrp);
 		closesigs(e->sigs);
 	}
+
+	ksd_rundtors();
+
+	free(up->ksd);
 	free(up->prog);
 	sema_destroy(up->os);
 	free(up->os);

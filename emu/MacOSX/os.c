@@ -86,6 +86,10 @@ pexit(char *msg, int t)
         closeegrp(e->egrp);
         closesigs(e->sigs);
     }
+
+    ksd_rundtors();
+
+    free(up->ksd);
     free(e->user);
     free(p->prog);
     free(p);

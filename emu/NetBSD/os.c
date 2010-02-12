@@ -63,6 +63,10 @@ pexit(char *msg, int t)
 		closesigs(e->sigs);
 	}
 	kstack = up->kstack;
+
+	ksd_rundtors();
+
+	free(up->ksd);
 	free(up->prog);
 	free(up);
 	if(kstack != nil)

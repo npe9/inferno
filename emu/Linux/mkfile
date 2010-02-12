@@ -4,7 +4,7 @@ SYSTARG=Linux
 
 #Configurable parameters
 
-CONF=emu-g			#default configuration
+CONF=emu			#default configuration
 CONFLIST=emu emu-g
 CLEANCONFLIST=
 
