@@ -1,3 +1,13 @@
+20100406
+	fix handling of boundary case in libtk/utils.c
+20100402
+	add new option OPTflags to libtk for later use
+20100325
+	more swizzling of libtk for later use. revised radio and check buttons.
+20100322
+	a few tweaks to Tk for later use
+20100320
+	appl/lib/json.b dis/lib/json.dis - use %f not string <real-value> to ensure json value acceptable [issue 230, powerman]
 20100310
 	stop tabs(2) from issuing pointless tk cmd that produces diagnostics
 20100305

@@ -45,8 +45,9 @@ enum {
 	Bitpadx	= 0,	/* Bitmap padding in labels */
 	Bitpady	= 0,
 	CheckButton	= 10,
-	CheckButtonBW	= 2,
+	CheckButtonBW	= 1,
 	ButtonBorder	= 4,
+	CheckSpace = CheckButton + 2*CheckButtonBW + 2*ButtonBorder,
 };
 
 extern	TkOption	tkbutopts[];
@@ -54,8 +55,6 @@ extern	TkOption	tkradopts[];
 extern	TkOption	tkcbopts[];
 
 /* label.c */
-extern	char*	tklabelsaverelief(Tk*, char*, char**);
-extern	char*	tklabelrestorerelief(Tk*, char*, char**);
 extern	void		tksizelabel(Tk*);
 extern	char*	tkdrawlabel(Tk*, Point);
 extern	void		tkfreelabel(Tk*);
@@ -65,8 +64,10 @@ extern	char*	tksetvar(TkTop*, char*, char*);
 /* buton.c */
 extern	Tk*	tkmkbutton(TkTop*, int);
 extern	void	tksizebutton(Tk*);
+extern	char*	tkdrawbutton(Tk*, Point);
 extern	char*	tkbuttoninvoke(Tk*, char*, char**);
 extern	char*	tkradioinvoke(Tk*, char*, char**);
+extern	void		tkfreebutton(Tk*);
 
 /* support for menus */
 extern	int		tklabelmargin(Tk*);
