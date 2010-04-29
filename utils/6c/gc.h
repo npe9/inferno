@@ -132,6 +132,7 @@ struct	Rgn
 };
 
 EXTERN	long	breakpc;
+EXTERN	long	nbreak;
 EXTERN	Case*	cases;
 EXTERN	Node	constnode;
 EXTERN	Node	fconstnode;
@@ -143,7 +144,6 @@ EXTERN	Prog*	firstp;
 EXTERN	Prog*	lastp;
 EXTERN	long	maxargsafe;
 EXTERN	int	mnstring;
-EXTERN	int	retok;
 EXTERN	Node*	nodrat;
 EXTERN	Node*	nodret;
 EXTERN	Node*	nodsafe;
@@ -273,7 +273,7 @@ void	gpseudo(int, Sym*, Node*);
 int	swcmp(const void*, const void*);
 void	doswit(Node*);
 void	swit1(C1*, int, long, Node*);
-void	cas(void);
+void	casf(void);
 void	bitload(Node*, Node*, Node*, Node*, Node*);
 void	bitstore(Node*, Node*, Node*, Node*, Node*);
 long	outstring(char*, long);
@@ -375,10 +375,6 @@ void	shiftit(Type*, Node*, Node*);
 #pragma	varargck	type	"P"	Prog*
 #pragma	varargck	type	"R"	int
 #pragma	varargck	type	"S"	char*
-
-/* wrecklessly steal a field */
-
-#define	rplink	label
 
 #define	D_X7	(D_X0+7)
 

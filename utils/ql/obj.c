@@ -6,6 +6,9 @@
 #define	DEFAULT	'9'
 #endif
 
+#define	OANAME	229	/* old ANAME */
+
+
 char	*noname		= "<none>";
 char	symname[]	= SYMDEF;
 char	thechar		= 'q';
@@ -14,10 +17,13 @@ char	*thestring 	= "power";
 /*
  *	-H0 -T0x200000 -R0		is boot
  *	-H1 -T0x100000 -R4		is Be boot
- *	-H2 -T4128 -R4096		is plan9 format
+ *	-H2 -T0x100020 -R0x100000	is plan9 format (was -T4128 -R4096)
  *	-H3 -T0x02010000 -D0x00001000	is raw
  *	-H4 -T0x1000200 -D0x20000e00 -R4	is aix xcoff executable
  *	-H5 -T0x80010000 -t0x10000	ELF, phys = 10000, vaddr = 0x8001...
+ *					appropriate for blue gene (bg/l anyway)
+ *	-H6 -T0xfffe2100 -R4		ELF, phys = vaddr = 0xfffe2100
+ *					appropriate for virtex 4 boot
  */
 
 static int
@@ -147,11 +153,11 @@ main(int argc, char *argv[])
 	case 2:	/* plan 9 */
 		HEADR = 32L;
 		if(INITTEXT == -1)
-			INITTEXT = 4128;
+			INITTEXT = 0x100020;
 		if(INITDAT == -1)
 			INITDAT = 0;
 		if(INITRND == -1)
-			INITRND = 4096;
+			INITRND = 0x100000;
 		break;
 	case 3:	/* raw */
 		HEADR = 0;
@@ -174,6 +180,7 @@ main(int argc, char *argv[])
 			INITRND = 0;
 		break;
 	case 5:	/* elf executable */
+	case 6:	/* elf for virtex 4 */
 		HEADR = rnd(52L+3*32L, 16);
 		if(INITTEXT == -1)
 			INITTEXT = 0x00400000L+HEADR;
@@ -718,35 +725,39 @@ loop:
 		bloc = buf.xbuf;
 		goto loop;
 	}
-	o = bloc[0];		/* as */
+	o = bloc[0] | (bloc[1] << 8);		/* as */
+	if(bloc[0] == OANAME && o != OANAME) {
+		diag("%s: probably old .q file\n", pn);
+		errorexit();
+	}
 	if(o <= 0 || o >= ALAST) {
 		diag("%s: opcode out of range %d", pn, o);
-		print("	probably not a .q file\n");
+		print("	probably not a .%c file\n", thechar);
 		errorexit();
 	}
 	if(o == ANAME || o == ASIGNAME) {
 		sig = 0;
 		if(o == ASIGNAME) {
-			sig = bloc[1] | (bloc[2]<<8) | (bloc[3]<<16) | (bloc[4]<<24);
+			sig = bloc[2] | (bloc[3]<<8) | (bloc[4]<<16) | (bloc[5]<<24);
 			bloc += 4;
 			c -= 4;
 		}
-		stop = memchr(&bloc[3], 0, bsize-&bloc[3]);
+		stop = memchr(&bloc[4], 0, bsize-&bloc[4]);
 		if(stop == 0){
 			bsize = readsome(f, buf.xbuf, bloc, bsize, c);
 			if(bsize == 0)
 				goto eof;
 			bloc = buf.xbuf;
-			stop = memchr(&bloc[3], 0, bsize-&bloc[3]);
+			stop = memchr(&bloc[4], 0, bsize-&bloc[4]);
 			if(stop == 0){
 				fprint(2, "%s: name too long\n", pn);
 				errorexit();
 			}
 		}
-		v = bloc[1];	/* type */
-		o = bloc[2];	/* sym */
-		bloc += 3;
-		c -= 3;
+		v = bloc[2];	/* type */
+		o = bloc[3];	/* sym */
+		bloc += 4;
+		c -= 4;
 
 		r = 0;
 		if(v == D_STATIC)
@@ -789,12 +800,12 @@ loop:
 	hunk += sizeof(Prog);
 
 	p->as = o;
-	p->reg = bloc[1] & 0x3f;
-	if(bloc[1] & 0x80)
+	p->reg = bloc[2] & 0x3f;
+	if(bloc[2] & 0x80)
 		p->mark = NOSCHED;
-	p->line = bloc[2] | (bloc[3]<<8) | (bloc[4]<<16) | (bloc[5]<<24);
-	r = zaddr(bloc+6, &p->from, h) + 6;
-	if(bloc[1] & 0x40)
+	p->line = bloc[3] | (bloc[4]<<8) | (bloc[5]<<16) | (bloc[6]<<24);
+	r = zaddr(bloc+7, &p->from, h) + 7;
+	if(bloc[2] & 0x40)
 		r += zaddr(bloc+r, &p->from3, h);
 	else
 		p->from3 = zprg.from3;
@@ -1213,16 +1224,24 @@ void
 doprof2(void)
 {
 	Sym *s2, *s4;
-	Prog *p, *q, *ps2, *ps4;
+	Prog *p, *q, *q2, *ps2, *ps4;
 
 	if(debug['v'])
 		Bprint(&bso, "%5.2f profile 2\n", cputime());
 	Bflush(&bso);
 
-	s2 = lookup("_profin", 0);
-	s4 = lookup("_profout", 0);
+	if(debug['e']){
+		s2 = lookup("_tracein", 0);
+		s4 = lookup("_traceout", 0);
+	}else{
+		s2 = lookup("_profin", 0);
+		s4 = lookup("_profout", 0);
+	}
 	if(s2->type != STEXT || s4->type != STEXT) {
-		diag("_profin/_profout not defined");
+		if(debug['e'])
+			diag("_tracein/_traceout not defined %d %d", s2->type, s4->type);
+		else
+			diag("_profin/_profout not defined");
 		return;
 	}
 
@@ -1263,7 +1282,20 @@ doprof2(void)
 			q->line = p->line;
 			q->pc = p->pc;
 			q->link = p->link;
-			p->link = q;
+			if(debug['e']){		/* embedded tracing */
+				q2 = prg();
+				p->link = q2;
+				q2->link = q;
+
+				q2->line = p->line;
+				q2->pc = p->pc;
+
+				q2->as = ABR;
+				q2->to.type = D_BRANCH;
+				q2->to.sym = p->to.sym;
+				q2->cond = q->link;
+			}else
+				p->link = q;
 			p = q;
 			p->as = ABL;
 			p->to.type = D_BRANCH;
@@ -1273,7 +1305,17 @@ doprof2(void)
 			continue;
 		}
 		if(p->as == ARETURN) {
-
+			/*
+			 * RETURN (default)
+			 */
+			if(debug['e']){		/* embedded tracing */
+				q = prg();
+				q->line = p->line;
+				q->pc = p->pc;
+				q->link = p->link;
+				p->link = q;
+				p = q;
+			}
 			/*
 			 * RETURN
 			 */
