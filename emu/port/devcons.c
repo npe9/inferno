@@ -9,6 +9,7 @@
 extern int cflag;
 int	exdebug;
 extern int keepbroken;
+Vmstat_root vmstat_root;
 
 enum
 {
@@ -32,7 +33,8 @@ enum
 	Qsysctl,
 	Qsysname,
 	Qtime,
-	Quser
+	Quser,
+	Qvmstat,
 };
 
 Dirtab contab[] =
@@ -58,6 +60,7 @@ Dirtab contab[] =
 	"sysname",	{Qsysname},	0,	0644,
 	"time",		{Qtime},	0,	0644,
 	"user",		{Quser},	0,	0644,
+	"vmstat",       {Qvmstat},      0,      0644,
 };
 
 Queue*	gkscanq;		/* Graphics keyboard raw scancodes */
@@ -96,6 +99,24 @@ static struct
 	Rune	c;
 	int	count;
 } kbd;
+
+void
+vmstat_entry(char *name, int *val_ptr, Lock *lk)
+{
+	Vmstat v;
+	v.name = name;
+	v.val_ptr = val_ptr;
+	v.lk = lk;
+
+	lock(&vmstat_root.lk);
+	do {
+		if (vmstat_root.i >= VMSTAT_ENTRIES)
+			break;
+
+		vmstat_root.entry[vmstat_root.i++] = v;
+	} while(0);
+	unlock(&vmstat_root.lk);
+}
 
 void
 kbdslave(void *a)
@@ -282,7 +303,8 @@ static long
 consread(Chan *c, void *va, long n, vlong offset)
 {
 	int send;
-	char *p, buf[64], ch;
+	char *p, buf[256], ch;
+	int i, j;
 
 	if(c->qid.type & QTDIR)
 		return devdirread(c, va, n, contab, nelem(contab), devgen);
@@ -326,6 +348,26 @@ consread(Chan *c, void *va, long n, vlong offset)
 	case Qdrivers:
 		return devtabread(c, va, n, offset);
 
+	case Qvmstat:
+		j = 0;
+		lock(&vmstat_root.lk);
+		do {
+			for (i = 0; i < vmstat_root.i; i++) {
+				if (vmstat_root.entry[i].lk) 
+					lock(vmstat_root.entry[i].lk);
+				if (j > sizeof(buf))
+					break;
+
+				j += snprint(buf + j, sizeof(buf) - j, "%s: %d\n",
+					     vmstat_root.entry[i].name,
+					     *vmstat_root.entry[i].val_ptr);
+				if (vmstat_root.entry[i].lk) 
+					unlock(vmstat_root.entry[i].lk);
+			}
+		} while(0);
+		unlock(&vmstat_root.lk);
+		
+		return readstr(offset, va, n, buf);
 	case Qmemory:
 		return poolread(va, n, offset);
 

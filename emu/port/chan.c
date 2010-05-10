@@ -2,6 +2,10 @@
 #include	"fns.h"
 #include	"error.h"
 
+static int n_chans = 0;
+static int n_active_chans = 0;
+static int stats_init = 0;
+
 char*
 c2name(Chan *c)		/* DEBUGGING */
 {
@@ -131,10 +135,18 @@ newchan(void)
 {
 	Chan *c;
 
+	if (stats_init == 0) {
+		stats_init = 1;
+		vmstat_entry("vm.n_chans", &n_chans, &chanalloc.l);
+		vmstat_entry("vm.n_active_chans", &n_active_chans, &chanalloc.l);
+	}
+
 	lock(&chanalloc.l);
 	c = chanalloc.free;
-	if(c != 0)
+	if(c != 0) {
 		chanalloc.free = c->next;
+		n_active_chans++;
+	}
 	unlock(&chanalloc.l);
 
 	if(c == nil) {
@@ -145,6 +157,8 @@ newchan(void)
 		c->fid = ++chanalloc.fid;
 		c->link = chanalloc.list;
 		chanalloc.list = c;
+		n_chans++;
+		n_active_chans++;
 		unlock(&chanalloc.l);
 	}
 
@@ -263,6 +277,7 @@ chanfree(Chan *c)
 	lock(&chanalloc.l);
 	c->next = chanalloc.free;
 	chanalloc.free = c;
+	n_active_chans--;
 	unlock(&chanalloc.l);
 }
 

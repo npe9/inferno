@@ -30,6 +30,9 @@ typedef struct Signerkey Signerkey;
 typedef struct Skeyset	Skeyset;
 typedef struct Uqid	Uqid;
 typedef struct Uqidtab	Uqidtab;
+typedef struct Vmstat	Vmstat;
+typedef struct Vmstat_root Vmstat_root;
+
 typedef struct Walkqid	Walkqid;
 
 #include "lib9.h"
@@ -132,6 +135,21 @@ struct Chan
 	Chan*	mchan;			/* channel to mounted server */
 	Qid	mqid;			/* qid of root of mount point */
 	Cname	*name;
+};
+
+#define VMSTAT_ENTRIES	256
+
+struct Vmstat {
+	int	type;
+	char    *name;
+	int     *val_ptr;
+	Lock    *lk;
+};
+
+struct Vmstat_root {
+       Lock    lk;
+       int     i;
+       Vmstat  entry[VMSTAT_ENTRIES];
 };
 
 struct Cname
@@ -466,6 +484,7 @@ extern	int	xtblbit;
 extern	int	globfs;
 extern	int	greyscale;
 extern	uint	qiomaxatomic;
+extern	Vmstat_root vmstat_root;
 
 /*
  * floating point control and status register masks

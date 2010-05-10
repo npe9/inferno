@@ -249,6 +249,7 @@ int		kdirfwstat(int, Dir*);
 long		kdirread(int, Dir**);
 int		klisten(char*, char*);
 
+
 Cname*	addelem(Cname*, char*);
 void		cleancname(Cname*);
 void		cnameclose(Cname*);
@@ -257,5 +258,7 @@ void		cnameclose(Cname*);
 int 		ksd_key_create(void (*)(void *));
 void 		*ksd_getspecific(int key);
 void 		*ksd_setspecific(int key, void *val);
+
+void           vmstat_entry(char *, int *, Lock *);
 
 #pragma varargck argpos iprint 1
