@@ -18,3 +18,6 @@ infernosite=
 	GAMES=your_games_server
 	registry=your_registry_server
 	gridsched=your_inferno_grid_scheduler
+
+auth=sources.cs.bell-labs.com authdom=outside.plan9.bell-labs.com
+auth=omni.9gridchan.org authdom=omni

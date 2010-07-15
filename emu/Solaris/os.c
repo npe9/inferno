@@ -3,6 +3,7 @@
 #include	"error.h"
 #undef _POSIX_C_SOURCE 
 #undef getwd
+#define __EXTENSIONS__
 #include	<unistd.h>
 #include	<thread.h>
 #include	<time.h>
@@ -59,6 +60,10 @@ pexit(char *msg, int t)
 		closeegrp(e->egrp);
 		closesigs(e->sigs);
 	}
+
+	ksd_rundtors();
+
+	free(up->ksd);
 	free(up->prog);
 	sema_destroy(up->os);
 	free(up->os);

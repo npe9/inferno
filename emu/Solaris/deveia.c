@@ -7,6 +7,9 @@ static char *sysdev[] = {
         "/dev/term/b"
 };
 
+#define _FILE_OFFSET_BITS 64
+#define __EXTENSIONS__
+#include <sys/termios.h>
 #include "deveia-posix.c"
 #include "deveia-bsd.c"
 

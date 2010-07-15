@@ -23,7 +23,7 @@
 #define	min(a,b)	((a) < (b) ? (a) : (b))
 static int debug;
 
-#define AUDIO_FILE_STRING	"/dev/dsp"
+#define AUDIO_FILE_STRING	"/dev/audio"
 
 enum {
 	A_Pause,
@@ -43,8 +43,6 @@ static	int	audio_file_in  = -1;	/* copy of above when opened O_READ/O_RDWR */
 static	int	audio_file_out  = -1;	/* copy of above when opened O_WRITE/O_RDWR */
 
 static	int	audio_swap_flag = 0;	/* endian swap */
-
-static	int	audio_in_pause = A_UnPause;
 
 static Audio_t av;
 static int mixerleftvol[32];
@@ -79,8 +77,6 @@ audio_ctl_init(void)
 void
 audio_file_open(Chan *c, int omode)
 {
-	char ebuf[ERRMAX];
-
 	if (debug)
 		print("audio_file_open(0x%.8lux, %d)\n", c, omode);
 	switch(omode){
@@ -188,7 +184,6 @@ audio_ctl_close(Chan *c)
 long
 audio_file_read(Chan *c, void *va, long count, vlong offset)
 {
-	struct  timespec time;
 	long ba, status, chunk, total;
 	char *pva = (char *) va;
 
@@ -236,7 +231,6 @@ audio_file_read(Chan *c, void *va, long count, vlong offset)
 long
 audio_file_write(Chan *c, void *va, long count, vlong offset)
 {
-	struct  timespec time;
 	long status = -1;
 	long ba, total, chunk, bufsz;
 
@@ -324,8 +318,6 @@ audio_open(void)
 long
 audio_ctl_write(Chan *c, void *va, long count, vlong offset)
 {
-	int	fd;
-	int	ff;
 	Audio_t tmpav = av;
 
 	tmpav.in.flags = 0;
@@ -435,24 +427,16 @@ choosefmt(Audio_d *i)
 static int
 audio_set_info(int fd, Audio_d *i, int d)
 {
-	int status;
-	int unequal_stereo = 0;
-
 	if(fd < 0)
 		return 0;
 
 	/* fmt */
-	if(i->flags & (AUDIO_BITS_FLAG || AUDIO_ENC_FLAG)) {
-		int oldfmt, newfmt;
-		oldfmt = AFMT_QUERY;
-		if (doioctl(fd, SNDCTL_DSP_SETFMT, &oldfmt) < 0)
-			return 0;
-		if (debug)
-			print("audio_set_info: current format 0x%.8lux\n", oldfmt);
+	if(i->flags & (AUDIO_BITS_FLAG | AUDIO_ENC_FLAG)) {
+		int  newfmt;
 		newfmt = choosefmt(i);
 		if (debug)
 			print("audio_set_info: new format 0x%.8lux\n", newfmt);
-		if (newfmt == -1 || newfmt != oldfmt && doioctl(fd, SNDCTL_DSP_SETFMT, &newfmt) < 0)
+		if (newfmt == -1 || doioctl(fd, SNDCTL_DSP_SETFMT, &newfmt) < 0)
 			return 0;
 	}
 

@@ -13,17 +13,19 @@ dev
 	fs
 	cmd	cmd
 	indir
+	serve
 
 	draw	win
 	pointer
 	snarf
 
-	ip	ipif ipaux
+	ip	ipif6-posix ipaux
 	eia
 #	audio	audio
 	mem
 
 lib
+	avl
 	interp
 	tk
 	freetype
@@ -67,6 +69,7 @@ port
 	exception
 	exportfs
 	inferno
+	ksd
 	latin1
 	main
 	parse

@@ -31,3 +31,10 @@ TEXT	FPrestore(SB), 1, $0
 	MOVL	fpu+0(FP), AX
 	FLDENV	0(AX)
 	RET
+
+
+TEXT _xadd(SB), $0          /* long _xadd(long *, long) */
+    MOVL    v+4(FP), AX
+    MOVL    p+0(FP), BX
+    LOCK;   XADDW   AX, (BX)
+    RET

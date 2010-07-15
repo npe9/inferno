@@ -1,0 +1,40 @@
+.TH SYNC 2
+.SH NAME
+sync \-
+process synchronization primitives.
+.SH SYNOPSIS
+.EX
+include "sync.m";
+sync := load Sync Sync->PATH;
+Rendez: adt[T] {
+	l: chan of int;
+	val: T;
+	ctr: int;
+	x: chan of T;
+
+	rendezvous: fn(nil: self ref Rendez, val:T): T;
+	new: fn(): ref Rendez[T];
+};
+init: fn();
+.EE
+.SH DESCRIPTION
+.B Sync
+provides various process synchronization primitives, such as Rendezvous.
+.B Init
+should be called before creating any locks.
+.TP
+.B Rendez[T].new()
+Creates and returns a reference to a new
+.B Rendezvous, 
+a structure at which two processes can synchronize and exchange values of
+reference type T.
+.TP
+.IB r.rendezvous(val: T): T
+Synchronizes at a Rendezvous. The first process arriving at the Rendezvous
+suspends execution until a second process arrives. The two processes
+exchange 
+.I val
+arguments and return them from the calls.
+.SH SOURCE
+.B /appl/lib/sync.b
+
