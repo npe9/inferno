@@ -2,7 +2,8 @@
 
 DIRS=\
 	acme\
-#	alphabet\
+	alphabet\
+	authsrc\
 	charon\
 	cmd\
 	collab\

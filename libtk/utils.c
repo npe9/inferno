@@ -2053,6 +2053,8 @@ tkblinkreset(Tk *tk)
 void
 tkblink(Tk *tk, void (*callback)(Tk*, int))
 {
+	return;	/* disable */
+
 	if (tk == nil || callback == nil) {
 		blinkw = nil;
 		return;
