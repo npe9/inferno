@@ -71,7 +71,7 @@ port
 	exportfs
 	exptab
 	inferno
-	ksd
+#	ksd
 	latin1
 	main
 	parse

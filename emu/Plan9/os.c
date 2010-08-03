@@ -60,7 +60,7 @@ pexit(char *msg, int)
 		closesigs(e->sigs);
 	}
 
-	ksd_rundtors();
+/* 	ksd_rundtors();					*/
 
 	free(up->ksd);
 	free(e->user);
