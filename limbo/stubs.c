@@ -25,12 +25,8 @@ emit(Decl *globals)
 		}
 	}
 	if(emitstub){
-		print("#pragma hjdicks x4\n");
-		print("#pragma pack x4\n");
 		adtstub(globals);
 		modstub(globals);
-		print("#pragma pack off\n");
-		print("#pragma hjdicks off\n");
 	}
 	if(emittab != nil)
 		modtab(globals);
@@ -113,7 +109,7 @@ modcode(Decl *globals)
 		print("\nvoid\n%sinit(void)\n{\n", emitcode);
 	else{
 		print("\nvoid\n%smodinit(void)\n{\n", emitcode);
-		print("\tbuiltinmod(\"$%s\", %smodtab);\n", emitcode, emitcode);
+		print("\tbuiltinmod(\"$%s\", %smodtab, %smodlen);\n", emitcode, emitcode, emitcode);
 	}
 	for(id = d->ty->ids; id != nil; id = id->next){
 		if(id->store == Dtype && id->ty->kind == Tadt){
@@ -145,8 +141,10 @@ modcode(Decl *globals)
 		print("\nvoid\n%s_%s(void *fp)\n{\n\tF_%s_%s *f = fp;\n",
 			id->dot->sym->name, id->sym->name,
 			id->dot->sym->name, id->sym->name);
-		if(id->ty->tof != tnone && tattr[id->ty->tof->kind].isptr)
-			print("\n\tdestroy(*f->ret);\n\t*f->ret = H;\n");
+		if(id->ty->tof != tnone && tattr[id->ty->tof->kind].isptr){
+			print("\tvoid *r;\n");
+			print("\n\tr = *f->ret;\n\t*f->ret = H;\n\tdestroy(r);\n");
+		}
 		print("}\n");
 	}
 

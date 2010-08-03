@@ -13,6 +13,7 @@ dev
 	fs
 	cmd	cmd
 	indir
+	serve
 
 	ip	ipif ipaux
 	eia
@@ -20,6 +21,7 @@ dev
 	mem
 
 lib
+	avl
 	interp
 	math
 	keyring
@@ -42,6 +44,8 @@ port
 	cache
 	chan
 	dev
+	devtab
+
 	dial
 	dis
 	discall
@@ -51,6 +55,7 @@ port
 	exception
 	exportfs
 	inferno
+	ksd
 	latin1
 	main
 	parse
@@ -75,6 +80,7 @@ root
 	/dev	/
 	/fd	/
 	/prog	/
+	/prof	/
 	/net	/
 	/net.alt	/
 	/chan	/

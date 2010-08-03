@@ -13,7 +13,8 @@ dev
 	fs
 	cmd	cmd
 	indir
-	sign
+#	sign
+	serve
 
 	draw	win
 	pointer
@@ -25,6 +26,7 @@ dev
 #	ip and eia are simply bound in from Plan 9
 
 lib
+	avl
 	interp
 	tk
 	freetype
@@ -57,6 +59,8 @@ port
 	cache
 	chan
 	dev
+	devtab
+
 	dial
 	dis
 	discall
@@ -67,6 +71,7 @@ port
 	exportfs
 	exptab
 	inferno
+#	ksd
 	latin1
 	main
 	parse
@@ -88,6 +93,7 @@ root
 	/dev	/
 	/fd	/
 	/prog	/
+	/prof	/
 	/net	/
 	/net.alt	/
 	/nvfs	/

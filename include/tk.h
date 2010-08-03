@@ -99,6 +99,7 @@ enum
 	OPTignore,	/* ignore this option */
 	OPTsticky,	/* sticky (any comb. of chars n, s, e, w) */
 	OPTlist,		/* list of text values */
+	OPTflags,		/* more than one OPTflag */
 
 	BoolX		= 0,
 	BoolT,
@@ -153,6 +154,7 @@ typedef struct TkMethod TkMethod;
 typedef struct TkAction TkAction;
 typedef struct TkWin TkWin;
 typedef struct TkCmdtab TkCmdtab;
+typedef struct TkMemimage TkMemimage;
 typedef struct TkMouse TkMouse;
 typedef struct TkVar TkVar;
 typedef struct TkMsg TkMsg;
@@ -164,6 +166,8 @@ typedef struct TkCursor TkCursor;
 typedef struct TkGrid TkGrid;
 typedef struct TkGridbeam TkGridbeam;
 typedef struct TkGridcell TkGridcell;
+
+#pragma incomplete TkCol
 
 struct TkImg
 {
@@ -216,7 +220,7 @@ struct TkVar
 
 struct TkPanelimage
 {
-	void*		image;		/* really Draw_Image */
+	void*		image;		/* Image paired with Draw_Image: see lookupimage in libinterp/draw.c */
 	int			ref;
 	TkPanelimage*	link;
 };
@@ -226,6 +230,13 @@ struct TkMouse
 	int		x;
 	int		y;
 	int		b;
+};
+
+struct TkMemimage
+{
+	Rectangle	r;
+	ulong	chans;
+	uchar*	data;
 };
 
 struct TkCmdtab
@@ -410,7 +421,8 @@ struct TkGeom
 	int		height;
 };
 
-struct TkGridbeam {
+struct TkGridbeam
+{
 	int		equalise;
 	int		minsize;
 	int		maxsize;
@@ -420,12 +432,14 @@ struct TkGridbeam {
 	char*	name;
 };
 
-struct TkGridcell {
+struct TkGridcell
+{
 	Tk*		tk;
 	Point		span;
 };
 
-struct TkGrid {
+struct TkGrid
+{
 	TkGridcell**	cells;		/* 2D array of cells, y major, x minor */
 	Point			dim;		/* dimensions of table */
 	TkGridbeam*	rows;
@@ -519,13 +533,6 @@ struct TkTtabstop
 	int		pos;
 	int		justify;
 	TkTtabstop*	next;
-};
-
-struct TkCol
-{
-	ulong	rgba;
-	Image*	i;
-	TkCol*	forw;
 };
 
 struct TkCtxt
@@ -685,7 +692,7 @@ extern	void		tksetglobalfocus(TkTop*, int);
 extern	TkImg*		tkname2img(TkTop*, char*);
 extern	void		tkimgput(TkImg*);
 extern	void		tksizeimage(Tk*, TkImg*);
-extern	TkImg*		tkauximage(TkTop*, char*, uchar*, int, int, Rectangle, int);
+extern	TkImg*		tkauximage(TkTop*, char*, TkMemimage*, int);
 
 /* choicebuttons - menus.c */
 extern	Tk*		tkfindchoicemenu(Tk*);
@@ -718,6 +725,8 @@ extern	char*		tkparsecolor(char*, ulong*);
 extern	Image*		tkgc(TkEnv*, int);
 extern	Image*		tkgshade(TkEnv*, int, int);
 extern	Image*		tkcolor(TkCtxt*, ulong);
+extern	Image*		tkcolormix(TkCtxt*, ulong, ulong);
+extern	Image*		tkgradient(TkCtxt*, Rectangle, int, ulong, ulong);
 extern	void			tkclear(Image*, Rectangle);
 extern	TkEnv*		tknewenv(TkTop*);
 extern	TkEnv*		tkdefaultenv(TkTop*);
@@ -734,7 +743,7 @@ extern	void		tkbox(Image*, Rectangle, int, Image*);
 extern	void		tkbevel(Image*, Point, int, int, int, Image*, Image*);
 extern	void		tkdrawrelief(Image*, Tk*, Point, int, int);
 extern	Point		tkstringsize(Tk*, char*);
-extern	char*		tkdrawstring(Tk*, Image*, Point, char*, int, Image *, int);
+extern	void		tkdrawstring(Tk*, Image*, Point, char*, int, Image *, int);
 extern	int		tkeventfmt(Fmt*);
 extern	Tk*		tkdeliver(Tk*, int, void*);
 extern	int		tksubdeliver(Tk*, TkAction*, int, void*, int);

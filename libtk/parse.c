@@ -47,6 +47,7 @@ static char* (*oparse[])(TkTop*, TkOption*, void*, char**, char*, char*) =
 	/* OPTignore */	pignore,
 	/* OPTsticky */	psticky,
 	/* OPTlist */ plist,
+	/* OPTflags */	pstab,
 };
 
 char*
@@ -97,15 +98,11 @@ tkword(TkTop *t, char *str, char *buf, char *ebuf, int *gotarg)
 			if(c == '\\') {
 				if(*str == '}' || *str == '{' || *str == '\\')
 					c = *str++;
-			}
-			else
-			if(c == '}') {
+			} else if(c == '}') {
 				lev--;
 				if(lev == 0)
 					break;
-			}
-			else
-			if(c == '{')
+			} else if(c == '{')
 				lev++;
 			*buf++ = c;
 		}
@@ -127,15 +124,11 @@ tkword(TkTop *t, char *str, char *buf, char *ebuf, int *gotarg)
 			if(c == '\\') {
 				if(*str == ']' || *str == '[' || *str == '\\')
 					c = *str++;
-			}
-			else
-			if(c == ']') {
+			} else if(c == ']') {
 				lev--;
 				if(lev == 0)
 					break;
-			}
-			else
-			if(c == '[')
+			} else if(c == '[')
 				lev++;
 			*p++ = c;
 		}
@@ -298,7 +291,7 @@ tkgencget(TkOptab *ft, char *arg, char **val, TkTop *t)
 	TkStab *s;
 	TkOption *o;
 	int wh, con, i, n, flag, *v;
-	char *r, *buf, *fmt;
+	char *r, *buf, *fmt, *out;
 
 	buf = mallocz(Tkmaxitem, 0);
 	if(buf == nil)
@@ -389,6 +382,23 @@ tkgencget(TkOptab *ft, char *arg, char **val, TkTop *t)
 		}
 		free(buf);
 		return tkvalue(val, "%s", c);
+	case OPTflags:
+		con = OPTION(ft->ptr, int, o->offset);
+		out = mallocz(Tkmaxitem, 0);
+		if(out == nil) {
+			free(buf);
+			return TkNomem;
+		}
+		c = out;
+		for (s = o->aux; s->val != nil; s++) {
+			if (s->con == (s->con&-s->con) && (con & s->con) != 0)
+				c = seprint(c, out+Tkmaxitem, " %s", s->val);	/* should this be quoted? */
+		}
+		free(buf);
+		*c = 0;
+		r = tkvalue(val, "%s", out);
+		free(out);
+		return r;
 	case OPTfont:
 		e = OPTION(ft->ptr, TkEnv*, o->offset);
 		free(buf);
@@ -419,8 +429,10 @@ tkgencget(TkOptab *ft, char *arg, char **val, TkTop *t)
 		free(buf);
 		return nil;
 	case OPTbmap:
+		//free(buf);
 		return tkvalue(val, "%d", OPTION(ft->ptr, Image*, o->offset) != nil);
 	case OPTimag:
+		//free(buf);
 		return tkvalue(val, "%d", OPTION(ft->ptr, TkImg*, o->offset) != nil);
 	}
 }
@@ -526,41 +538,60 @@ psize(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 	return nil;
 }
 
+static TkStab*
+lookstab(TkStab *s, char *word)
+{
+	for(; s->val != nil; s++)
+		if(strcmp(s->val, word) == 0)
+			return s;
+	return nil;
+}
+
 static char*
 pstab(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 {
-	char *p;
-	int mask;
+	char *p, *fields[8];
+	int mask, val, nf;
 	TkStab *s, *c;
 
 	p = tkword(t, *str, buf, ebuf, nil);
 	if(*buf == '\0')
 		return TkOparg;
 
-	for(s = o->aux; s->val; s++)
-		if(strcmp(s->val, buf) == 0)
-			break;
-	if(s->val == nil)
-		return TkBadvl;
-
-	*str = p;
 	if(o->type == OPTstab) {
+		s = lookstab(o->aux, buf);
+		if(s == nil)
+			return TkBadvl;
+		*str = p;
 		OPTION(place, int, o->offset) = s->con;
 		return nil;
 	}
+
+	nf = getfields(buf, fields, nelem(fields), 1, " \t,");
+	if(nf < 1 || nf > 1 && o->type != OPTflags)
+		return TkBadvl;
 
 	mask = 0;
 	for(c = o->aux; c->val; c++)
 		mask |= c->con;
 
+	val = 0;
+	while(--nf >= 0) {
+		s = lookstab(o->aux, fields[nf]);
+		if(s == nil)
+			return TkBadvl;
+		val |= s->con;
+	}
+	*str = p;
+
 	OPTION(place, int, o->offset) &= ~mask;
-	OPTION(place, int, o->offset) |= s->con;
+	OPTION(place, int, o->offset) |= val;
 
 	/*
 	 * a hack, but otherwise we have to dirty the focus order
 	 * every time any command is executed on a widget
 	 */
-	if (!strcmp(o->o, "takefocus"))
+	if(strcmp(o->o, "takefocus") == 0)
 		tkdirtyfocusorder(t);
 	return nil;
 }
@@ -701,8 +732,7 @@ pbmap(TkTop *t, TkOption *o, void *place, char **str, char *buf, char *ebuf)
 
 	if(buf[0] == '@')
 		i = display_open(d, buf+1);
-	else
-	if(buf[0] == '<') {
+ else if(buf[0] == '<') {
 		buf++;
 		fd = strtoul(buf, &c, 0);
 		if(c == buf) {

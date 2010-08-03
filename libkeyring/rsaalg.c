@@ -28,6 +28,12 @@ rsa_str2sk(char *str, char **strp)
 	rsa->c2 = base64tobig(p, &p);
 	if(strp)
 		*strp = p;
+	if(rsa->pub.n == nil || rsa->pub.ek == nil ||
+	   rsa->dk == nil || rsa->p == nil || rsa->q == nil ||
+	   rsa->kp == nil || rsa->kq == nil || rsa->c2 == nil){
+		rsaprivfree(rsa);
+		return nil;
+	}
 
 	return rsa;
 }
@@ -43,6 +49,10 @@ rsa_str2pk(char *str, char **strp)
 	rsa->ek = base64tobig(p, &p);
 	if(strp)
 		*strp = p;
+	if(rsa->n == nil || rsa->ek == nil){
+		rsapubfree(rsa);
+		return nil;
+	}
 
 	return rsa;
 }
@@ -50,10 +60,12 @@ rsa_str2pk(char *str, char **strp)
 static void*
 rsa_str2sig(char *str, char **strp)
 {
-	BigInt rsa;
+	mpint *rsa;
 	char *p;
 
 	rsa = base64tobig(str, &p);
+	if(rsa == nil)
+		return nil;
 	if(strp)
 		*strp = p;
 	return rsa;
@@ -101,7 +113,7 @@ rsa_pk2str(void *vrsa, char *buf, int len)
 static int
 rsa_sig2str(void *vrsa, char *buf, int len)
 {
-	BigInt rsa;
+	mpint *rsa;
 	char *cp, *ep;
 
 	rsa = vrsa;
@@ -145,18 +157,18 @@ rsa_genfrompk(void *vpub)
 }
 
 static void*
-rsa_sign(BigInt m, void *key)
+rsa_sign(mpint* m, void *key)
 {
 	return rsadecrypt((RSApriv*)key, m, nil);
 }
 
 static int
-rsa_verify(BigInt m, void *sig, void *key)
+rsa_verify(mpint* m, void *sig, void *key)
 {
-	BigInt t;
+	mpint *t;
 	int r;
 
-	t = rsaencrypt((RSApub*)key, (BigInt)sig, nil);
+	t = rsaencrypt((RSApub*)key, (mpint*)sig, nil);
 	r = mpcmp(t, m) == 0;
 	mpfree(t);
 	return r;
@@ -177,7 +189,7 @@ rsa_freepub(void *a)
 static void
 rsa_freesig(void *a)
 {
-	mpfree((BigInt)a);
+	mpfree(a);
 }
 
 SigAlgVec*

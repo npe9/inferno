@@ -8,13 +8,22 @@
 #include	<sys/wait.h>
 #include	<sys/time.h>
 
+#include	<stdint.h>
+
 #include	"dat.h"
 #include	"fns.h"
 #include	"error.h"
+#include <fpuctl.h>
+
+#include	<raise.h>
 
 /* glibc 2.3.3-NTPL messes up getpid() by trying to cache the result, so we'll do it ourselves */
 #include	<sys/syscall.h>
 #define	getpid()	syscall(SYS_getpid)
+
+/* temporarily suppress CLONE_PTRACE so it works on broken Linux kernels */
+#undef CLONE_PTRACE
+#define	CLONE_PTRACE	0
 
 enum
 {
@@ -63,6 +72,10 @@ pexit(char *msg, int t)
 		closesigs(e->sigs);
 	}
 	kstack = up->kstack;
+
+	ksd_rundtors();
+
+	free(up->ksd);
 	free(up->prog);
 	free(up);
 	if(kstack != nil)
@@ -91,7 +104,7 @@ kproc(char *name, void (*func)(void*), void *arg, int flags)
 
 	p = newproc();
 	if(0)
-		print("start %s:%.8lx\n", name, p);
+		print("start %s:%#p\n", name, p);
 	if(p == nil) {
 		print("kproc(%s): no memory", name);
 		return;
@@ -124,7 +137,7 @@ kproc(char *name, void (*func)(void*), void *arg, int flags)
 
 	if(flags & KPX11){
 		p->kstack = nil;	/* never freed; also up not defined */
-		tos = (char*)mallocz(X11STACK, 0) + X11STACK - sizeof(void*);
+		tos = (char*)mallocz(X11STACK, 0) + X11STACK - sizeof(vlong);
 	}else
 		p->kstack = stackalloc(p, &tos);
 
@@ -146,51 +159,50 @@ kproc(char *name, void (*func)(void*), void *arg, int flags)
 	return 0;
 }
 
-/*
- * TO DO:
- * To get pc on trap, use sigaction instead of signal and
- * examine its siginfo structure
- */
-
-/*
 static void
-diserr(char *s, int pc)
+sysfault(char *what, void *addr)
 {
-	char buf[ERRMAX];
+	char buf[64];
 
-	snprint(buf, sizeof(buf), "%s: pc=0x%lux", s, pc);
+	snprint(buf, sizeof(buf), "sys: %s%#p", what, addr);
 	disfault(nil, buf);
 }
-*/
 
 static void
-trapILL(int signo)
+trapILL(int signo, siginfo_t *si, void *a)
 {
 	USED(signo);
-	disfault(nil, "Illegal instruction");
+	USED(a);
+	sysfault("illegal instruction pc=", si->si_addr);
+}
+
+static int
+isnilref(siginfo_t *si)
+{
+	return si != 0 && (si->si_addr == (void*)~(uintptr_t)0 || (uintptr_t)si->si_addr < 512);
 }
 
 static void
-trapBUS(int signo)
+trapmemref(int signo, siginfo_t *si, void *a)
 {
-	USED(signo);
-	disfault(nil, "Bus error");
+	USED(a);	/* ucontext_t*, could fetch pc in machine-dependent way */
+	if(isnilref(si))
+		disfault(nil, exNilref);
+	else if(signo == SIGBUS)
+		sysfault("bad address addr=", si->si_addr);	/* eg, misaligned */
+	else
+		sysfault("segmentation violation addr=", si->si_addr);
 }
 
 static void
-trapSEGV(int signo)
+trapFPE(int signo, siginfo_t *si, void *a)
 {
-	USED(signo);
-	disfault(nil, "Segmentation violation");
-}
+	char buf[64];
 
-#include <fpuctl.h>
-static void
-trapFPE(int signo)
-{
 	USED(signo);
-	print("FPU status=0x%.4lux", getfsr());
-	disfault(nil, "Floating exception");
+	USED(a);
+	snprint(buf, sizeof(buf), "sys: fp: exception status=%.4lux pc=%#p", getfsr(), si->si_addr);
+	disfault(nil, buf);
 }
 
 static void
@@ -343,14 +355,15 @@ libinit(char *imod)
 		signal(SIGINT, cleanexit);
 
 	if(sflag == 0) {
-		act.sa_handler = trapBUS;
-		sigaction(SIGBUS, &act, nil);
-		act.sa_handler = trapILL;
+		act.sa_flags = SA_SIGINFO;
+		act.sa_sigaction = trapILL;
 		sigaction(SIGILL, &act, nil);
-		act.sa_handler = trapSEGV;
-		sigaction(SIGSEGV, &act, nil);
-		act.sa_handler = trapFPE;
+		act.sa_sigaction = trapFPE;
 		sigaction(SIGFPE, &act, nil);
+		act.sa_sigaction = trapmemref;
+		sigaction(SIGBUS, &act, nil);
+		sigaction(SIGSEGV, &act, nil);
+		act.sa_flags &= ~SA_SIGINFO;
 	}
 
 	p = newproc();
@@ -517,19 +530,7 @@ stackalloc(Proc *p, void **tos)
 	rv = stacklist.free;
 	stacklist.free = *(void **)rv;
 	unlock(&stacklist.l);
-	*tos = rv + KSTACK - sizeof(void *);
+	*tos = rv + KSTACK - sizeof(vlong);
 	*(Proc **)rv = p;
 	return rv;
 }
-
-#ifdef LINUX_ARM
-#define	SYS_cacheflush	__ARM_NR_cacheflush
-
-int
-segflush(void *a, ulong n)
-{
-	if(n)
-		syscall(SYS_cacheflush, a, (char*)a+n-1, 1);
-	return 0;
-}
-#endif

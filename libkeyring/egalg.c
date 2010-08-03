@@ -24,6 +24,10 @@ eg_str2sk(char *str, char **strp)
 	eg->secret = base64tobig(p, &p);
 	if(strp)
 		*strp = p;
+	if(eg->pub.p == nil || eg->pub.alpha == nil || eg->pub.key == nil || eg->secret == nil){
+		egprivfree(eg);
+		return nil;
+	}
 	return eg;
 }
 
@@ -39,6 +43,10 @@ eg_str2pk(char *str, char **strp)
 	eg->key = base64tobig(p, &p);
 	if(strp)
 		*strp = p;
+	if(eg->p == nil || eg->alpha == nil || eg->key == nil){
+		egpubfree(eg);
+		return nil;
+	}
 	return eg;
 }
 
@@ -53,6 +61,10 @@ eg_str2sig(char *str, char **strp)
 	eg->s = base64tobig(p, &p);
 	if(strp)
 		*strp = p;
+	if(eg->r == nil || eg->s == nil){
+		egsigfree(eg);
+		return nil;
+	}
 	return eg;
 }
 
@@ -145,13 +157,13 @@ eg_genfrompk(void *vpub)
 }
 
 static void*
-eg_sign(BigInt mp, void *key)
+eg_sign(mpint* mp, void *key)
 {
 	return egsign((EGpriv*)key, mp);
 }
 
 static int
-eg_verify(BigInt mp, void *sig, void *key)
+eg_verify(mpint* mp, void *sig, void *key)
 {
 	return egverify((EGpub*)key, (EGsig*)sig, mp) == 0;
 }

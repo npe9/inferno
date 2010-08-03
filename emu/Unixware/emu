@@ -13,17 +13,19 @@ dev
 	fs
 	cmd	cmd
 	indir
+	serve
 
 	draw	win-x11a
 	pointer
 	snarf
 
-	ip	ipif ipaux
+	ip	ipif-posix ipaux
 	eia
 #	audio	audio
 	mem
 
 lib
+	avl
 	interp
 	tk
 	freetype
@@ -56,6 +58,8 @@ port
 	cache
 	chan
 	dev
+	devtab
+
 	dial
 	dis
 	discall
@@ -65,6 +69,7 @@ port
 	exception
 	exportfs
 	inferno
+	ksd
 	latin1
 	main
 	parse
@@ -85,6 +90,7 @@ root
 	/dev	/
 	/fd	/
 	/prog	/
+	/prof	/
 	/net	/
 	/net.alt	/
 	/chan	/

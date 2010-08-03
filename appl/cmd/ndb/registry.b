@@ -92,6 +92,7 @@ Event: adt {
 	remove:	fn(e: self ref Event);
 	queue:	fn(e: self ref Event, m: ref Tmsg.Read): string;
 	post:		fn(vers: int);
+	flush:	fn(tag: int);
 };
 
 filters: list of ref Filter;
@@ -152,6 +153,7 @@ init(nil: ref Draw->Context, args: list of string)
 			error(sys->sprint("can't open %s: %r", dbfile));
 		dbload(db);
 		db = nil;	# for now assume it's static
+		attrdb = nil;
 	}
 	navops := chan of ref Navop;
 	spawn navigator(navops);
@@ -214,6 +216,9 @@ Serve:
 			err = remove(fid);
 			if(err == nil)
 				srv.reply(ref Rmsg.Remove(m.tag));
+		Flush =>
+			Event.flush(m.oldtag);
+			srv.default(gm);
 		* =>
 			srv.default(gm);
 		}
@@ -291,8 +296,9 @@ write(m: ref Tmsg.Write, fid: ref Fid): string
 			return "bad syntax";
 		# first write names the service (possibly with attributes)
 		if(svc.name == nil){
-			if(svcnameok(hd toks) != nil)
-				return "bad service name";
+			err := svcnameok(hd toks);
+			if(err != nil)
+				return err;
 			svc.name = hd toks;
 			toks = tl toks;
 		}
@@ -302,7 +308,8 @@ write(m: ref Tmsg.Write, fid: ref Fid): string
 		svc.vers++;
 		for(; toks != nil; toks = tl tl toks)
 			svc.set(hd toks, hd tl toks);
-		Event.post(++rootvers);
+		rootvers++;
+		Event.post(rootvers);
 	Qfind =>
 		s := string m.data;
 		toks := str->unquoted(s);
@@ -335,9 +342,12 @@ clunk(fid: ref Fid)
 	case path & Mask {
 	Qsvc =>
 		svc := Service.find(path >> Shift);
-		if(svc != nil && svc.fid == fid.fid && int svc.get("persist") == 0){
+		if(svc != nil && svc.fid == fid.fid && (fid.mode & Sys->ORCLOSE || int svc.get("persist") == 0)){
 			svc.remove();
-			Event.post(rootvers);
+			if(svc.name != nil){	# otherwise there's no visible change
+				rootvers++;
+				Event.post(rootvers);
+			}
 		}
 	Qevent =>
 		if((e := Event.find(fid.fid)) != nil)
@@ -355,6 +365,7 @@ remove(fid: ref Fid): string
 		svc := Service.find(path >> Shift);
 		if(fid.uname == svc.owner){
 			svc.remove();
+			rootvers++;
 			Event.post(rootvers);
 			return nil;
 		}
@@ -374,7 +385,8 @@ svcnameok(s: string): string
 	"new" or
 	"event" or
 	"find" or
-	"index" =>
+	"index" or
+	"" =>
 		return "bad service name";
 	}
 	for(i = 0; i < nservices; i++)
@@ -460,16 +472,25 @@ navigator(navops: chan of ref Navop)
 				d[1] = Qindex;
 				d[2] = Qfind;
 				d[3] = Qevent;
+				nd := 0;
 				for(i := 0; i < nservices; i++)
-					if(services[i].name != nil)
-						d[i + Nstatic] = (services[i].id<<Shift) | Qsvc;
+					if(services[i].name != nil){
+						d[nd + Nstatic] = (services[i].id<<Shift) | Qsvc;
+						nd++;
+					}
+				d = d[0:Nstatic + nd];
 			}
 			if(d == nil){
 				n.reply <-= (nil, Enotdir);
 				break;
 			}
-			for(i := n.offset; i < len d; i++)
-				n.reply <-= dirgen(d[i]);
+			for(i := n.offset; i < len d; i++){
+				(dir, err) := dirgen(d[i]);
+				if(dir == nil)
+					sys->fprint(sys->fildes(2), "registry: bad qid %#ux: %s\n", d[i], err);
+				else
+					n.reply <-= (dir, err);
+			}
 			n.reply <-= (nil, nil);
 		}
 	}
@@ -554,7 +575,6 @@ Service.new(owner: string): ref Service
 	services[nservices] = svc;
 	svc.slot = nservices;
 	nservices++;
-	rootvers++;
 	return svc;
 }
 
@@ -571,7 +591,6 @@ Service.remove(svc: self ref Service)
 	slot := svc.slot;
 	services[slot] = nil;
 	nservices--;
-	rootvers++;
 	if(slot != nservices){
 		services[slot] = services[nservices];
 		services[slot].slot = slot;
@@ -692,6 +711,17 @@ Event.post(vers: int)
 			srv.reply(styxservers->readstr(e.m, s));
 			e.vers = vers;
 			e.m = nil;
+		}
+	}
+}
+
+Event.flush(tag: int)
+{
+	for(l := events; l != nil; l = tl l){
+		e := hd l;
+		if(e.m != nil && e.m.tag == tag){
+			e.m = nil;
+			break;
 		}
 	}
 }

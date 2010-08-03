@@ -1,3 +1,252 @@
+20100802
+	various changes held back by accident, notably stackv in stack(1), better diagnostics by cat(1)
+20100801
+	libtk/coval.c - simplify vlong expression for some compilers [issue 216, mechiel]
+20100727
+	on Linux and MacOSX, look at faulting address to decide if it's dereference of nil
+20100722
+	include/bio.h add varargck and repair resulting diagnostics in utils and limbo/ [issue 237, mechiel]
+20100719
+	appl/cmd/disk/mkfs.b change getname/getpath to cope with missing newline [issue 236]
+20100715
+	appl/wm/toolbar.b changed not to create new /chan/snarf if one exists, unless -p (private) option given [toolbar(1)]
+	utils/cc/macbody - add overlooked change to implement __VA_ARGS__
+	other minor updates to the compilers to resync
+20100714
+	correctly initialise types in utils/cc/sub.c
+20100504
+	change lib9/strtoull.c for MS
+20100503
+	updated libmach/8db.c to avoid [] initialisers
+20100501
+	update libmach to compensate for MS compiler
+20100426
+	updated libmach
+	updated compiler suites (continuing)
+20100425
+	appl/wm/wm.b shorten processing of wmctl close if client hadn't started
+20100406
+	fix handling of boundary case in libtk/utils.c
+20100402
+	add new option OPTflags to libtk for later use
+20100325
+	more swizzling of libtk for later use. revised radio and check buttons.
+20100322
+	a few tweaks to Tk for later use
+20100320
+	appl/lib/json.b dis/lib/json.dis - use %f not string <real-value> to ensure json value acceptable [issue 230, powerman]
+20100310
+	stop tabs(2) from issuing pointless tk cmd that produces diagnostics
+20100305
+	add emu/Linux/audio-oss.c from saoret.one [issue 226]
+20100226
+	mention -n nvram option in keyfs(4)
+20100220
+	appl/cmd/keyfs.b wasn't clunking fids on error in remove [issue 225]
+20100213
+	apply saoret.one's changes for thumb [issue 155]
+20100205
+	update man pages to replace most references to Styx by 9P
+	update man pages to replace references to sys-dial(2) by dial(2)
+	add DragonFly files (from fgudin and extrudedaluminiu, issue 181); possibly should automatically keep aligned with FreeBSD
+	fpe handling in OpenBSD and FreeBSD [mechiel, issue 190]
+	appl/cmd/vacfs.b apply fix from mechiel [issue 204]
+20100203
+	appl/lib/cfg.b treat \r as white space [issue 69, issue 70]
+	add u64int to lib9.h files that needed it
+	add sha2.c sha256block.c sha512block.c to libsec/port and include/libsec.h [issue 185, mechiel]
+	add new sha functions to module/keyring.m and libinterp/keyring.c
+20100115
+	appl/cmd/tarfs.b man/4/tarfs changes to permission handling from mechiel [issue 220]
+	appl/spree/mkfile add explicit -I$ROOT/module [issue 209, powerman]
+20100110
+	appl/cmd/tcs.b [issue 12, arvindht]: process unconverted bytes next cycle, flush conversion state; improve error checking
+20091219
+	change default roots in Nt utils to c:\inferno
+20091215
+	factotum(2) updated to include keyspec in signature
+	appl/cmd/mount.b uses -k value as keyspec if -9 selected [not to much purpose with current factotum's p9any]
+	bind(1) [for mount] updated to describe -k used for keyspec if -9 selected
+20091214
+	switch more commands to use dial(2)
+	change emu/Linux/emu-g not to require X11 libs (again)
+20091213
+	temper the tendancy of port/dis.c to yield during idle gc: it's compensating for os scheduling, but yield less often
+20091208
+	add mkdir -p to makemk.sh to ensure output directories exist [issue 213]
+20091127
+	problems fixed in styxconv(2), which can now convert both ways [rog]
+20091119
+	emu/port/devfs-posix.c	missing waserror in dirread (obscure but possible failure)
+20091007
+	remove intermediate exception-raising function from charon implementation
+20091004
+	restore "keyring" to lib section of emu/Plan9/emu
+20090930
+	emu/*/ipif*.c make "hangup" act as in native Inferno; also delete unused so_setsockopt
+	provide correct version of devmnt.c
+20090928
+	update import(4) to remove the restriction to Plan 9 (can use Inferno's own factotum)
+	(emu os)^/port/devmnt.c fix from plan 9 (don't access vanished data)
+20090830
+	check subexp length in ed [cmbrannon79]
+20090825
+	add netmkaddr call to /appl/cmd/ftpfs.b; send errors to standard error
+20090824
+	delete unused (and somewhat incomplete) pin support
+20090822
+	in the what were we thinking dept: appl/cmd/touch.b and dis/touch.dis updated to avoid using an Arg after nil'ing it [thanks to cmbrannon]
+	make progmode propagate to pgrps; recover from exceptions in pgrp creation
+20090821
+	emu/Nt/^(os.c ie-os.c) add #include <excpt.h>
+20090819
+	appl/cmd/mk/mk.b replace maketmp/mktemp (issue 202, mechiel); also old change: don't persist with bulkmtime on non-directories
+20090816
+	registry(4) Event.post increased rootvers when entries are written or removed (issue 179, powerman)
+20090809
+	bring mkfs(8) up to date (issue 176)
+	remove -q options from mkfs and mkext (-q was a transitional option to suppress quoting of file names)
+20090806
+	increase `backlog' value in all listen calls in hosted Inferno (emu/*/ipif*.c) [powerman]
+20090805
+	further checking added to libinterp/keyring.c: rejects incorrect states and out of bounds values of f->n
+	add lib/emptydirs and mkdirs target to /mkfile (utils/mkdir needs to be changed for Windows use)
+20090730
+	improve the error checking in strtosk and strtopk to help detect mangled or inappropriate keys
+20090728
+	emu/port/main.c: put host's working directory name as emuwdir
+	document initial environment variables in emu(1)
+	appl/lib/bufio.b dis/lib/bufio.dis [issue 199] don't lose track of actual file seek offset (following second suggestion of mjl)
+	issue 196: after general apologies for appl/svc/httpd/cache.b (don't look if you don't need it, not one of ours, etc. etc.) will patch as suggested by extrudedaluminiu(!) [vs]
+20090719
+	correct order of operands to memset(!), eg in ipif [mjl]
+20090718
+	fix appl/cmd/stream.b error exits to include fail: [mjl]
+20090717
+	fix appl/lib/ip.b (see issue 186) [mjl]
+	re-enable XK_ keys in port/win-x11a.c [mjl]
+20090716
+	add segflush calls to comp-386.c [probably need different name eventually to avoid time wasting when not needed]
+20090630
+	add sig (see man(1)) [via p9p and caerwyn]
+20090627
+	push changes described for arm in 20090330 (but not previously pushed)
+	begin change of inferno-os.googlecode.com from svn to mercurial
+200090612
+	added support for Linux-power (ericvh; and further simplified)
+20090605
+	appl/cmd/disk/kfs.b dis/disk/kfs.dis - don't try to update super block if readonly(!) [issue 175]
+20090526
+	emu/Nt/os.c allow /dev/hoststdin input on file or pipe (thanks to caerwyn, issue 173)
+	emu/port/devfs-posix.c correct handling of error return from pread (issue 172, but goes beyond that)
+	emu/port/exportfs.c os/port/exportfs.c use vlong for offset
+20090524
+	appl/cmd/tarfs.b dis/tarfs.dis - remove accidentally small limit on file size in tar file (issue 172)
+20090521
+	module/vac.m appl/cmd/vacfs.b appl/lib/vac.b [issue 152] (Mecchiel)
+20090505
+	add -h/-t header/trailer options to man2html
+20090430
+	filter-deflate(2), appl/lib/^(inflate.b deflate.b): changes from mjl to support zlib headers for deflate streams as well as gzip's
+20090417
+	add m4(1) in its initial form (might split the macro processing proper off into a library module)
+20090409
+	tools/odbc/odbc.c data read should return 0 if no columns or rows (issue 170)
+20090408
+	tools/odbc/odbc.c use strecpy and more care in allocation (issue 169)
+20090403
+	change ,2 to ,#function in Solaris sparc assembler files (apparently works in gcc and sun's)
+	make appl/wm/brutus.b pass input to its widgets (issue 105)
+	enable fullscreen mode in MacOSX (issue 148)
+20090402
+	add missing emu/Linux/segflush-*.c files and remove ARM segflush from os.c
+20090402
+	ramfile and logfile shouldn't set Sys->MCREATE (issue 137)
+20090401
+	appl/cmd/limbo/typecheck.b check correctly for function prevented from inline expansion
+20090330
+	use (low, high) order for words in vlong and fp on arm: libinterp/comp-arm.c, Inferno/arm/include/^(lib9.h u.h)
+		also os/*/fpi.h (for arm platforms), exchanging order of ulongs in Double
+		also libkern/^(vlrt-arm.c vlop-arm.s vlop-thumb.s frexp-arm.c frexp-thumb.c)
+	include changes from richard miller for little-endian mips (spim) and Linux/spim hosted
+	libmath/dtoa.c: use simpler code to avoid gcc bug on mips and perhaps other platforms (rmiller)
+20090330-branches/forse
+	include appl/cmd/ssh source (won't compile here because it needs the keyring changes)
+20090325-branches/forse
+	emu/* adopt changes to Chan (Dev* dev pointer instead of int type)
+20090320
+	emu/port/win-x11a.c: unintuitively use xdisplay not xkbdcon to send to kbdproc (with big stack) to change cursor
+		(the big stack is needed because XCreateBitmapFromData and XPutImage pass control to theme-related code that uses lots of stack space)
+	use uname not aname for user name in libstyx and set aname to "" by default
+	make odbc's new file have mode 666 so others can open it
+	add styxsetowner function to styxserver.h to set default owner (eve)
+	move styxserver.h to inferno's include directory
+20090222
+	appl/cmd/ndb/registry.b and dis/registry.dis - implement flush for event file (issue 162)
+20090217
+	appl/cmd/limbo/stubs.b limbo/stubs.c - include length parameter to builtinmod (could just be 0 in most cases)
+	change f->ret/destroy code in stubs.c/stubs.b to destroy correctly in case of exceptions
+20090202
+	emu/port/win-x11a.c: might as well try this everywhere now
+20090127
+	libinterp/xec.c: fix gc problem with self
+20090122
+	libinterp/string.c: slicer can return H for empty slice after bounds check (brucee)
+20081119
+	os/pc/^(main.c fns.h) more idle idlehands
+20081112
+	emu/Linux/asm-arm.S old failure to use different regs for swp finally changed here
+	libmath/blas.c compensate for gcc bug on arm
+20081107
+	replace calls to calloc by malloc
+20081106
+	os/port/dis.c prevent new spawns during killgrp
+	also synchronise two killgrps of the same group
+20081105
+	emu/port/dis.c prevent new spawns during killgrp [#117]
+20081022
+	sh: ignore leading white space in fail: strings, and change empty tail to "failed"
+	/emu/port/devfs-posix.c don't call readdir after it has returned end of file
+20081021
+	/appl/cmd/auth/ai2key.b new command to convert authinfo files to factotum keys
+	/appl/cmd/auth/factotum/proto/infauth.b allow new key format
+20081019
+	/appl/cmd/man2html.b implement "\ " => "&nbsp;"
+	/man/3/prog change way a literal " was formatted
+	/man/8/srv deleted (obsolete)
+	removed reference to srv(8) from sys-pctl(2)
+20080909
+	/appl/cmd/puttar.b add extra empty block at end of archive as required by format
+20080907
+	include some changes from acme-sac in emu/Nt/devfs.c; need further control of usesec (or discard it)
+20080723
+	rename Inferno's yacc to iyacc to avoid clash with system's own (now that Linux and others distribute it)
+20080707
+	update emu/port/win-x11a.c (fix someone's earlier patch to stop using undefined value)
+	emu/port/main.c mark obsolete options and remove from usage
+20080705
+	update utils/sed, eliminating anonymous unions (just by commenting them out, to keep source in step with 9)
+		and several other changes for portability
+20080703
+	remove anonymous unions (and unused structs) from unpacking structures in emu/Nt/vlrt.c, not that it's used
+20080617
+	win-x11a.c add sqweek's change to pass on KeyRelease values (but perhaps 1-byte values are no longer enough?)
+20080614
+	change os/port/devcons.c to use error not panic in sysfatal
+20080612
+	change several libmp/port functions to use sysfatal not abort
+	change emu/port/main.c to have sysfatal call error not exit
+20080611
+	Keyring->dhparams to use DSAprimes in special case
+	IPint.random now ignores minint (will go next revision)
+	BigInt -> mpint*
+	checkIPint in libinterp/ipint.c
+	default keys in auth/createsignerkey are 1024 not 512 bits
+	update os/boot/pc
+20080610
+	push sh-mload(1) and changes to sh-expr(1)
+20080609
+	_tas type changed from ulong to int
 20080530
 	issue 91: _declspec changed to __declspec in Nt files
 	issue 92: argv0 declaration changed to extern from static in emu/Nt/win.c

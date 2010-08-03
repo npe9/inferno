@@ -571,7 +571,7 @@ Tmsg.read(fd: ref Sys->FD, msglim: int): ref Tmsg
 		return nil;
 	(nil, m) := Tmsg.unpack(msg);
 	if(m == nil)
-		return ref Tmsg.Readerror(0, "bad Styx T-message format");
+		return ref Tmsg.Readerror(0, "bad 9P T-message format");
 	return m;
 }
 
@@ -843,7 +843,7 @@ Rmsg.read(fd: ref Sys->FD, msglim: int): ref Rmsg
 		return nil;
 	(nil, m) := Rmsg.unpack(msg);
 	if(m == nil)
-		return ref Rmsg.Readerror(0, "bad Styx R-message format");
+		return ref Rmsg.Readerror(0, "bad 9P R-message format");
 	return m;
 }
 
@@ -863,7 +863,7 @@ readmsg(fd: ref Sys->FD, msglim: int): (array of byte, string)
 	if(msglim <= 0)
 		msglim = MAXRPC;
 	sbuf := array[BIT32SZ] of byte;
-	if((n := readn(fd, sbuf, BIT32SZ)) != BIT32SZ){
+	if((n := sys->readn(fd, sbuf, BIT32SZ)) != BIT32SZ){
 		if(n == 0)
 			return (nil, nil);
 		return (nil, sys->sprint("%r"));
@@ -871,31 +871,17 @@ readmsg(fd: ref Sys->FD, msglim: int): (array of byte, string)
 	ml := (int sbuf[1] << 8) | int sbuf[0];
 	ml |= ((int sbuf[3] << 8) | int sbuf[2]) << 16;
 	if(ml <= BIT32SZ)
-		return (nil, "invalid Styx message size");
+		return (nil, "invalid 9P message size");
 	if(ml > msglim)
-		return (nil, "Styx message longer than agreed");
+		return (nil, "9P message longer than agreed");
 	buf := array[ml] of byte;
 	buf[0:] = sbuf;
-	if((n = readn(fd, buf[BIT32SZ:], ml-BIT32SZ)) != ml-BIT32SZ){
+	if((n = sys->readn(fd, buf[BIT32SZ:], ml-BIT32SZ)) != ml-BIT32SZ){
 		if(n == 0)
-			return (nil, "Styx message truncated");
+			return (nil, "9P message truncated");
 		return (nil, sys->sprint("%r"));
 	}
 	return (buf, nil);
-}
-
-readn(fd: ref Sys->FD, buf: array of byte, nb: int): int
-{
-	for(nr := 0; nr < nb;){
-		n := sys->read(fd, buf[nr:], nb-nr);
-		if(n <= 0){
-			if(nr == 0)
-				return n;
-			break;
-		}
-		nr += n;
-	}
-	return nr;
 }
 
 istmsg(f: array of byte): int

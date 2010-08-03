@@ -1,0 +1,15 @@
+<../../mkconfig
+
+TARG=\
+	9cpu.dis\
+	fdrun.dis\
+	remotesh.dis\
+	winsrv.dis\
+
+SYSMODULES=\
+	fdrun.m\
+
+DISBIN=$ROOT/dis
+
+<$ROOT/mkfiles/mkdis
+

@@ -9,6 +9,7 @@
 extern int cflag;
 int	exdebug;
 extern int keepbroken;
+Vmstat_root vmstat_root;
 
 enum
 {
@@ -27,13 +28,13 @@ enum
 	Qmsec,
 	Qnotquiterandom,
 	Qnull,
-	Qpin,
 	Qrandom,
 	Qscancode,
 	Qsysctl,
 	Qsysname,
 	Qtime,
-	Quser
+	Quser,
+	Qvmstat,
 };
 
 Dirtab contab[] =
@@ -53,13 +54,13 @@ Dirtab contab[] =
 	"msec",		{Qmsec},	NUMSIZE,	0444,
 	"notquiterandom",	{Qnotquiterandom},	0,	0444,
 	"null",		{Qnull},	0,	0666,
-	"pin",		{Qpin},		0,	0666,
 	"random",	{Qrandom},	0,	0444,
 	"scancode",	{Qscancode},	0,	0444,
 	"sysctl",	{Qsysctl},	0,	0644,
 	"sysname",	{Qsysname},	0,	0644,
 	"time",		{Qtime},	0,	0644,
 	"user",		{Quser},	0,	0644,
+	"vmstat",       {Qvmstat},      0,      0644,
 };
 
 Queue*	gkscanq;		/* Graphics keyboard raw scancodes */
@@ -98,6 +99,24 @@ static struct
 	Rune	c;
 	int	count;
 } kbd;
+
+void
+vmstat_entry(char *name, int *val_ptr, Lock *lk)
+{
+	Vmstat v;
+	v.name = name;
+	v.val_ptr = val_ptr;
+	v.lk = lk;
+
+	lock(&vmstat_root.lk);
+	do {
+		if (vmstat_root.i >= VMSTAT_ENTRIES)
+			break;
+
+		vmstat_root.entry[vmstat_root.i++] = v;
+	} while(0);
+	unlock(&vmstat_root.lk);
+}
 
 void
 kbdslave(void *a)
@@ -283,9 +302,9 @@ consclose(Chan *c)
 static long
 consread(Chan *c, void *va, long n, vlong offset)
 {
-	ulong l;
-	int i, send;
-	char *p, buf[64], ch;
+	int send;
+	char *p, buf[256], ch;
+	int i, j;
 
 	if(c->qid.type & QTDIR)
 		return devdirread(c, va, n, contab, nelem(contab), devgen);
@@ -309,12 +328,6 @@ consread(Chan *c, void *va, long n, vlong offset)
 		genrandom(va, n);
 		return n;
 
-	case Qpin:
-		p = "pin set";
-		if(up->env->pgrp->pin == Nopin)
-			p = "no pin";
-		return readstr(offset, va, n, p);
-
 	case Qhostowner:
 		return readstr(offset, va, n, eve);
 
@@ -333,21 +346,28 @@ consread(Chan *c, void *va, long n, vlong offset)
 		return readstr(offset, va, n, buf);
 
 	case Qdrivers:
-		p = malloc(READSTR);
-		if(p == nil)
-			error(Enomem);
-		l = 0;
-		for(i = 0; devtab[i] != nil; i++)
-			l += snprint(p+l, READSTR-l, "#%C %s\n", devtab[i]->dc,  devtab[i]->name);
-		if(waserror()){
-			free(p);
-			nexterror();
-		}
-		n = readstr(offset, va, n, p);
-		poperror();
-		free(p);
-		return n;
+		return devtabread(c, va, n, offset);
 
+	case Qvmstat:
+		j = 0;
+		lock(&vmstat_root.lk);
+		do {
+			for (i = 0; i < vmstat_root.i; i++) {
+				if (vmstat_root.entry[i].lk) 
+					lock(vmstat_root.entry[i].lk);
+				if (j > sizeof(buf))
+					break;
+
+				j += snprint(buf + j, sizeof(buf) - j, "%s: %d\n",
+					     vmstat_root.entry[i].name,
+					     *vmstat_root.entry[i].val_ptr);
+				if (vmstat_root.entry[i].lk) 
+					unlock(vmstat_root.entry[i].lk);
+			}
+		} while(0);
+		unlock(&vmstat_root.lk);
+		
+		return readstr(offset, va, n, buf);
 	case Qmemory:
 		return poolread(va, n, offset);
 
@@ -488,16 +508,6 @@ conswrite(Chan *c, void *va, long n, vlong offset)
 		break;
 
 	case Qnull:
-		break;
-
-	case Qpin:
-		if(up->env->pgrp->pin != Nopin)
-			error("pin already set");
-		if(n >= sizeof(buf))
-			n = sizeof(buf)-1;
-		strncpy(buf, va, n);
-		buf[n] = '\0';
-		up->env->pgrp->pin = atoi(buf);
 		break;
 
 	case Qtime:

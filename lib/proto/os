@@ -24,6 +24,11 @@ Inferno
 		include
 			*
 		lib
+	spim
+		bin
+		include
+			*
+		lib
 	thumb
 		bin
 		include
@@ -70,6 +75,7 @@ libkern
 	frexp-mips.c
 	frexp-power.c
 	frexp-sparc.c
+	frexp-spim.c
 	frexp-thumb.c
 	getfcr-386.s
 	getfcr-68000.s
@@ -77,6 +83,7 @@ libkern
 	getfcr-mips.s
 	getfcr-power.s
 	getfcr-sparc.s
+	getfcr-spim.s
 	getfcr-thumb.s
 	getfields.c
 	log.c
@@ -85,15 +92,13 @@ libkern
 	memchr.c
 	memcmp-power.s
 	memcmp.c
-	memcpy-386.s
-	memcpy-arm.c
-	memcpy-thumb.c
 	memmove.c
 	memmove-386.s
 	memmove-68000.s
 	memmove-arm.s
 	memmove-mips.s
 	memmove-power.s
+	memmove-spim.s
 	memmove-sparc.s
 	memmove-thumb.s
 	memset-386.s
@@ -102,6 +107,7 @@ libkern
 	memset-mips.s
 	memset-power.s
 	memset-sparc.s
+	memset-spim.s
 	memset-thumb.s
 	memset.c
 	mkfile
@@ -119,6 +125,7 @@ libkern
 	nan-arm.c
 	nan-mips.c
 	nan-power.c
+	nan-spim.c
 	nan-sparc.c
 	nan-thumb.c
 	netmkaddr.c
@@ -140,6 +147,7 @@ libkern
 	strchr-mips.s
 	strchr-power.s
 	strchr-sparc.s
+	strchr-spim.c
 	strchr-thumb.s
 	strchr.c
 	strcmp-power.s
@@ -157,6 +165,7 @@ libkern
 	strtol.c
 	strtoll.c
 	strtoul.c
+	strtoull.c
 	tokenize.c
 	toupper.c
 	u16.c
@@ -172,6 +181,7 @@ libkern
 	vlop-mips.s
 	vlop-power.s
 	vlop-sparc.s
+	vlop-spim.s
 	vlop-thumb.s
 	vlrt-386.c
 	vlrt-68000.c
@@ -179,6 +189,7 @@ libkern
 	vlrt-mips.c
 	vlrt-power.c
 	vlrt-sparc.c
+	vlrt-spim.c
 	vlrt-thumb.c
 	vseprint.c
 	vsmprint.c
@@ -338,17 +349,22 @@ os
 			8250.c
 			LICENCE
 			NOTICE
+			ahci.h
 			alarm.c
+			aoe.h
 			apm.c
 			bcom.c
 			boot.c
 			bootld.c
 			bootp.c
 			cga.c
+			cis.c
 			clock.c
 			conf.c
 			console.c
 			dat.h
+			devbios.c
+			devbios.h
 			devfloppy.c
 			devfloppy.h
 			devi82365.c
@@ -368,11 +384,16 @@ os
 			ether8139.c
 			ether8169.c
 			ether82557.c
+			ether82563.c
 			ether83815.c
 			ether8390.c
 			ether8390.h
+			etherdp83820.c
 			etherec2t.c
 			etherelnk3.c
+			etherelnk3x.c
+			etherga620.c
+			etherga620fw.h
 			etherif.h
 			etherigbe.c
 			ethermii.c
@@ -410,7 +431,10 @@ os
 			sd.h
 			sd53c8xx.c
 			sd53c8xx.i
+			sdaoe.c
 			sdata.c
+			sdbios.c
+			sdiahci.c
 			sdmylex.c
 			sdscsi.c
 			trap.c

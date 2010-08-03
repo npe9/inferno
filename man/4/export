@@ -5,8 +5,6 @@ export \- export name space on a connection
 .B export
 [
 .B \-a
-] [
-.B \-n
 ]
 .I dir
 [
@@ -15,12 +13,10 @@ export \- export name space on a connection
 .SH DESCRIPTION
 .I Export
 calls
-.B Sys->export
-(see
-.IR sys-dial (2))
-to serve a name space rooted at
+.IR sys-export (2)
+to serve the name space rooted at
 .I dir
-over a connection to a Styx client.
+over a connection to a 9P (Styx) client.
 .I Export
 opens the connection on the given
 .IR file ,
@@ -32,28 +28,17 @@ option is given, however,
 .I export
 starts an Inferno kernel process
 to serve the name space and returns immediately.
-.PP
-Normally,
-.I export
-forks the current name space, and makes
-.I dir
-the root of its copy.
-Changes subsequently made to the current name space will
-not be visible to clients of
-.IR export .
-If the
-.B \-n
-option is given, however, and
-.I dir
-is the root
-.RB (` / '),
-.I export
+.I Export
 serves the current name space without forking it; changes made to it
 will be visible to clients.
 .PP
 .I Export
-starts serving Styx immediately; it assumes that the connection
+starts serving 9P immediately; it assumes that the connection
 has been authenticated if required.
+.I Export
+is typically called via
+.IR listen (1),
+which can authenticate the connection.
 .SH EXAMPLE
 Start a background process to serve the name space on the serial port.
 .IP
@@ -65,5 +50,7 @@ unless a transport protocol is run on the connection.
 .B /appl/cmd/export.b
 .SH SEE ALSO
 .IR cpu (1),
-.IR sys-dial (2),
+.IR listen (1),
+.IR dial (2),
+.IR sys-export (2),
 .IR intro (5)

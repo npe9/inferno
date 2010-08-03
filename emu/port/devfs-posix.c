@@ -29,6 +29,7 @@ struct Fsinfo
 	struct dirent*	de;	/* directory reading */
 	int	fd;		/* open files */
 	ulong	offset;	/* offset when reading directory */
+	int	eod;	/* end of directory */
 	QLock	oq;	/* mutex for offset */
 	char*	spec;
 	Cname*	name;	/* Unix's name for file */
@@ -278,6 +279,7 @@ fsopen(Chan *c, int mode)
 		FS(c)->dir = opendir(FS(c)->name->s);
 		if(FS(c)->dir == 0)
 			oserror();
+		FS(c)->eod = 0;
 	}
 	else {
 		if(mode & OTRUNC)
@@ -333,6 +335,7 @@ fscreate(Chan *c, char *name, int mode, ulong perm)
 		FS(c)->dir = opendir(n->s);
 		if(FS(c)->dir == nil)
 			oserror();
+		FS(c)->eod = 0;
 	} else {
 		o = (O_CREAT | O_EXCL) | (mode&3);
 		if(mode & OTRUNC)
@@ -398,10 +401,13 @@ fsread(Chan *c, void *va, long n, vlong offset)
 		qunlock(&FS(c)->oq);
 	}else{
 		r = pread(FS(c)->fd, va, n, offset);
-		if(r < 0 && (errno == ESPIPE || errno == EPIPE)){
-			r = read(FS(c)->fd, va, n);
-			if(r < 0)
-				oserror();
+		if(r < 0){
+			if(errno == ESPIPE || errno == EPIPE){
+				r = read(FS(c)->fd, va, n);
+				if(r >= 0)
+					return r;
+			}
+			oserror();
 		}
 	}
 	return r;
@@ -744,7 +750,7 @@ fsdirread(Chan *c, uchar *va, int count, vlong offset)
 	struct stat stbuf;
 	char path[MAXPATH], *ep;
 	struct dirent *de;
-	static char slop[8192];
+	static uchar slop[8192];
 
 	i = 0;
 	fspath(FS(c)->name, "", path);
@@ -752,11 +758,13 @@ fsdirread(Chan *c, uchar *va, int count, vlong offset)
 	if(FS(c)->offset != offset) {
 		seekdir(FS(c)->dir, 0);
 		FS(c)->de = nil;
+		FS(c)->eod = 0;
 		for(n=0; n<offset; ) {
 			de = readdir(FS(c)->dir);
 			if(de == 0) {
 				/* EOF, so stash offset and return 0 */
 				FS(c)->offset = n;
+				FS(c)->eod = 1;
 				return 0;
 			}
 			if(de->d_ino==0 || de->d_name[0]==0 || isdots(de->d_name))
@@ -767,7 +775,12 @@ fsdirread(Chan *c, uchar *va, int count, vlong offset)
 				continue;
 			}
 			qlock(&idl);
+			if(waserror()){
+				qunlock(&idl);
+				nexterror();
+			}
 			r = fsdirconv(c, de->d_name, &stbuf, slop, sizeof(slop), 1);
+			poperror();
 			qunlock(&idl);
 			if(r <= 0) {
 				FS(c)->offset = n;
@@ -777,6 +790,9 @@ fsdirread(Chan *c, uchar *va, int count, vlong offset)
 		}
 		FS(c)->offset = offset;
 	}
+
+	if(FS(c)->eod)
+		return 0;
 
 	/*
 	 * Take idl on behalf of id2name.  Stalling attach, which is a
@@ -789,8 +805,10 @@ fsdirread(Chan *c, uchar *va, int count, vlong offset)
 		FS(c)->de = nil;
 		if(de == nil)
 			de = readdir(FS(c)->dir);
-		if(de == nil)
+		if(de == nil){
+			FS(c)->eod = 1;
 			break;
+		}
 
 		if(de->d_ino==0 || de->d_name[0]==0 || isdots(de->d_name))
 			continue;
@@ -933,7 +951,6 @@ static User*
 newuname(char *name)
 {
 	struct passwd *p;
-	User *u;
 
 	p = getpwnam(name);
 	if(p == nil)
@@ -945,7 +962,6 @@ static User*
 newuid(int id)
 {
 	struct passwd *p;
-	User *u;
 
 	p = getpwuid(id);
 	if(p == nil)
@@ -992,7 +1008,6 @@ newgname(char *name)
 static User*
 id2user(User **tab, int id, User* (*get)(int))
 {
-	int i;
 	User *u, **h;
 
 	h = hashuser(tab, id);

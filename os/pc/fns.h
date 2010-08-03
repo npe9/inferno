@@ -48,7 +48,7 @@ int	i8259enable(Vctl*);
 int	i8259vecno(int);
 int	i8259disable(int);
 void	idle(void);
-#define	idlehands()			/* nothing to do in the runproc */
+void	idlehands(void);
 int	inb(int);
 void	insb(int, void*, int);
 ushort	ins(int);
@@ -133,12 +133,11 @@ ulong rdtsc32(void);
 void	screeninit(void);
 int	screenprint(char*, ...);			/* debugging */
 void	(*screenputs)(char*, int);
-#define	segflush(a,n)
+int	segflush(void*, ulong);
 void	syncclock(void);
 uvlong	tscticks(uvlong*);
 void	trapenable(int, void (*)(Ureg*, void*), void*, char*);
 void	trapinit(void);
-ulong	_tas(ulong*);
 ulong	umbmalloc(ulong, int, int);
 void	umbfree(ulong, int);
 ulong	umbrwmalloc(ulong, int, int);
@@ -151,6 +150,7 @@ void*	vmap(ulong, int);
 void	vunmap(void*, int);
 void	wrmsr(ulong, ulong);
 int	xchgw(ushort*, int);
+int	xadd(int*, int);
 ulong	kzeromap(ulong, ulong, int);
 void	nmiscreen(void);
 int	kbdinready(void);

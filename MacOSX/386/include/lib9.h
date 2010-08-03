@@ -36,6 +36,8 @@ typedef	long long	vlong;
 typedef	unsigned long long	uvlong;
 typedef ushort		Rune;
 typedef unsigned int	u32int;
+typedef uvlong u64int;
+
 typedef unsigned int	mpdigit;	/* for /sys/include/mp.h */
 typedef unsigned short u16int;
 typedef unsigned char u8int;
@@ -297,11 +299,11 @@ extern	int	encodefmt(Fmt*);
  */
 typedef
 struct Lock {
-	ulong	val;
+	int	val;
 	int	pid;
 } Lock;
 
-extern ulong	_tas(ulong*);
+extern int	_tas(int*);
 
 extern	void	lock(Lock*);
 extern	void	unlock(Lock*);

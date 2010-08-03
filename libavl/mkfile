@@ -1,0 +1,12 @@
+<../mkconfig
+
+LIB=libavl.a
+
+OFILES=	\
+	avl.$O\
+
+HFILES=\
+	$ROOT/include/avl.h
+
+<$ROOT/mkfiles/mksyslib-$SHELLTYPE
+

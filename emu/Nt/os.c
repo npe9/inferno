@@ -4,6 +4,7 @@
 #include <winbase.h>
 #include	<winsock.h>
 #undef Unknown
+#include	<excpt.h>
 #include	"dat.h"
 #include	"fns.h"
 #include	"error.h"
@@ -495,7 +496,15 @@ close(int fd)
 int
 read(int fd, void *buf, uint n)
 {
-	if(!ReadFile(ntfd2h(fd), buf, n, &n, NULL))
+	HANDLE h;
+
+	if(fd == 0)
+		h = kbdh;
+	else
+		h = ntfd2h(fd);
+	if(h == INVALID_HANDLE_VALUE)
+		return -1;
+	if(!ReadFile(h, buf, n, &n, NULL))
 		return -1;
 	return n;
 }
@@ -795,4 +804,28 @@ widebytes(wchar_t *ws)
 	while (*ws)
 		n += runelen(*ws++);
 	return n+1;
+}
+
+int
+incref(Ref *r)
+{
+	int x;
+
+	lock(&r->lk);
+	x = ++r->ref;
+	unlock(&r->lk);
+	return x;
+}
+
+int
+decref(Ref *r)
+{
+	int x;
+
+	lock(&r->lk);
+	x = --r->ref;
+	unlock(&r->lk);
+	if(x < 0)
+		panic("decref, pc=0x%lux", getcallerpc(&r));
+	return x;
 }

@@ -1,3 +1,5 @@
+env
+	X11LIBS=
 dev
 	root
 	cons
@@ -13,13 +15,15 @@ dev
 	fs
 	cmd	cmd
 	indir
+	serve
 
-	ip	ipif-posix ipaux
+	ip	ipif6-posix ipaux
 	eia
 #	audio	audio
 	mem
 
 lib
+	avl
 	interp
 	math
 	keyring
@@ -42,6 +46,8 @@ port
 	cache
 	chan
 	dev
+	devtab
+
 	dial
 	dis
 	discall
@@ -51,8 +57,10 @@ port
 	exception
 	exportfs
 	inferno
+	ksd
 	latin1
 	main
+	objcache
 	parse
 	pgrp
 	print
@@ -73,6 +81,7 @@ root
 	/dev	/
 	/fd	/
 	/prog	/
+	/prof	/
 	/net	/
 	/net.alt	/
 	/chan	/

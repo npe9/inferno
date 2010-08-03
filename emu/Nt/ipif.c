@@ -10,6 +10,14 @@
 #include        "error.h"
 
 extern int SOCK_SELECT;
+char Enotv4[] = "address not IPv4";
+
+static void
+ipw6(uchar *a, ulong w)
+{
+	memmove(a, v4prefix, IPv4off);
+	memmove(a+IPv4off, &w, IPv4addrlen);
+}
 
 int
 so_socket(int type)
@@ -26,15 +34,16 @@ so_socket(int type)
 		type = SOCK_DGRAM;
 		break;
 	}
+
 	fd = socket(AF_INET, type, 0);
 	if(fd < 0)
 		oserror();
 	if(type == SOCK_DGRAM){
 		one = 1;
-		setsockopt(fd, SOL_SOCKET, SO_BROADCAST, (char*)&one, sizeof (one));
+		setsockopt(fd, SOL_SOCKET, SO_BROADCAST, (char*)&one, sizeof(one));
 	}else{
 		one = 1;
-		setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (char *)&one, sizeof(one));
+		setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (char*)&one, sizeof(one));
 	}
 	return fd;
 }
@@ -47,12 +56,11 @@ so_send(int sock, void *va, int len, void *hdr, int hdrlen)
 	struct sockaddr_in *sin;
 	char *h = hdr;
 
-
 	osenter();
 	if(hdr == 0)
 		r = send(sock, va, len, 0);
 	else {
-		memset(&sa, sizeof(sa), 0);
+		memset(&sa, 0, sizeof(sa));
 		sin = (struct sockaddr_in*)&sa;
 		sin->sin_family = AF_INET;
 		switch(hdrlen){
@@ -127,10 +135,10 @@ so_recv(int sock, void *va, int len, void *hdr, int hdrlen)
 		l = sizeof(sa);
 		r = recvfrom(sock, va, len, 0, &sa, &l);
 		if(r >= 0) {
-			memset(h, sizeof h, 0);
+			memset(h, 0, sizeof h);
 			switch(hdrlen){
 			case OUdphdrlenv4:
-				memmove(h, &sin->sin_addr, 4);
+				memmove(h, &sin->sin_addr, IPv4addrlen);
 				memmove(h+2*IPv4addrlen, &sin->sin_port, 2);
 				break;
 			case OUdphdrlen:
@@ -144,6 +152,7 @@ so_recv(int sock, void *va, int len, void *hdr, int hdrlen)
 			}
 
 			/* alas there's no way to get the local addr/port correctly.  Pretend. */
+			memset(&sa, 0, sizeof sa);
 			getsockname(sock, &sa, &l);
 			switch(hdrlen){
 			case OUdphdrlenv4:
@@ -174,17 +183,20 @@ so_close(int sock)
 }
 
 void
-so_connect(int fd, unsigned long raddr, unsigned short rport)
+so_connect(int fd, unsigned char *raddr, unsigned short rport)
 {
 	int r;
 	struct sockaddr sa;
 	struct sockaddr_in *sin;
 
+	if(!isv4(raddr))
+		error(Enotv4);
+
 	memset(&sa, 0, sizeof(sa));
 	sin = (struct sockaddr_in*)&sa;
 	sin->sin_family = AF_INET;
 	hnputs(&sin->sin_port, rport);
-	hnputl(&sin->sin_addr.s_addr, raddr);
+	memmove(&sin->sin_addr.s_addr, raddr+IPv4off, IPv4addrlen);
 
 	osenter();
 	r = connect(fd, &sa, sizeof(sa));
@@ -194,22 +206,21 @@ so_connect(int fd, unsigned long raddr, unsigned short rport)
 }
 
 void
-so_getsockname(int fd, unsigned long *laddr, unsigned short *lport)
+so_getsockname(int fd, unsigned char *laddr, unsigned short *lport)
 {
 	int len;
 	struct sockaddr sa;
 	struct sockaddr_in *sin;
 
-	sin = (struct sockaddr_in*)&sa;
-
 	len = sizeof(sa);
 	if(getsockname(fd, &sa, &len) < 0)
 		oserror();
 
+	sin = (struct sockaddr_in*)&sa;
 	if(sin->sin_family != AF_INET || len != sizeof(*sin))
-		error("not AF_INET");
+		error(Enotv4);
 
-	*laddr = nhgetl(&sin->sin_addr.s_addr);
+	ipw6(laddr, sin->sin_addr.s_addr);
 	*lport = nhgets(&sin->sin_port);
 }
 
@@ -219,14 +230,14 @@ so_listen(int fd)
 	int r;
 
 	osenter();
-	r = listen(fd, 5);
+	r = listen(fd, 256);
 	osleave();
 	if(r < 0)
 		oserror();
 }
 
 int
-so_accept(int fd, unsigned long *raddr, unsigned short *rport)
+so_accept(int fd, unsigned char *raddr, unsigned short *rport)
 {
 	int nfd, len;
 	struct sockaddr sa;
@@ -246,15 +257,15 @@ so_accept(int fd, unsigned long *raddr, unsigned short *rport)
 		oserror();
 
 	if(sin->sin_family != AF_INET || len != sizeof(*sin))
-		error("not AF_INET");
+		error(Enotv4);
 
-	*raddr = nhgetl(&sin->sin_addr.s_addr);
+	ipw6(raddr, sin->sin_addr.s_addr);
 	*rport = nhgets(&sin->sin_port);
 	return nfd;
 }
 
 void
-so_bind(int fd, int su, unsigned long addr, unsigned short port)
+so_bind(int fd, int su, unsigned char *addr, unsigned short port)
 {
 	int i, one;
 	struct sockaddr sa;
@@ -272,7 +283,7 @@ so_bind(int fd, int su, unsigned long addr, unsigned short port)
 		for(i = 600; i < 1024; i++) {
 			memset(&sa, 0, sizeof(sa));
 			sin->sin_family = AF_INET;
-			hnputl(&sin->sin_addr.s_addr, addr);
+			memmove(&sin->sin_addr.s_addr, addr+IPv4off, IPv4addrlen);
 			hnputs(&sin->sin_port, i);
 
 			if(bind(fd, &sa, sizeof(sa)) >= 0)	
@@ -283,28 +294,10 @@ so_bind(int fd, int su, unsigned long addr, unsigned short port)
 
 	memset(&sa, 0, sizeof(sa));
 	sin->sin_family = AF_INET;
-	hnputl(&sin->sin_addr.s_addr, addr);
+	memmove(&sin->sin_addr.s_addr, addr+IPv4off, IPv4addrlen);
 	hnputs(&sin->sin_port, port);
 
 	if(bind(fd, &sa, sizeof(sa)) < 0)
-		oserror();
-}
-
-void
-so_setsockopt(int fd, int opt, int value)
-{
-	int r;
-	struct linger l;
-
-	if(opt == SO_LINGER){
-		l.l_onoff = 1;
-		l.l_linger = (short) value;
-		osenter();
-		r = setsockopt(fd, SOL_SOCKET, opt, (char *)&l, sizeof(l));
-		osleave();
-	}else
-		error(Ebadctl);
-	if(r < 0)
 		oserror();
 }
 
@@ -340,7 +333,7 @@ so_gethostbyaddr(char *addr, char **hostv, int n)
 	if(straddr == -1)
 		return 0;
 
-	hp = gethostbyaddr((char *)&straddr, sizeof (straddr), AF_INET);
+	hp = gethostbyaddr((char *)&straddr, sizeof(straddr), AF_INET);
 	if(hp == 0)
 		return 0;
 
@@ -370,13 +363,13 @@ so_getservbyname(char *service, char *net, char *port)
 }
 
 int
-so_hangup(int fd, int linger)
+so_hangup(int fd, int nolinger)
 {
 	int r;
-	static struct linger l = {1, 1000};
+	static struct linger l = {1, 0};
 
 	osenter();
-	if(linger)
+	if(nolinger)
 		setsockopt(fd, SOL_SOCKET, SO_LINGER, (char*)&l, sizeof(l));
 	r = closesocket(fd);
 	osleave();

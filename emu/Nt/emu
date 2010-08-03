@@ -16,10 +16,12 @@ dev
 	fs
 	cmd	cmd
 	indir
+	serve
 
 	draw	win
 
 	ip	ipif ipaux
+#	ip	ipif6 ipaux  # change SYSLIBS in mkfile to use ws2_32.lib instead of wsock32.lib
 	eia
 	audio	audio
 	mem
@@ -57,6 +59,8 @@ port
 	cache
 	chan
 	dev
+	devtab
+
 	dial
 	dis
 	discall
@@ -86,6 +90,7 @@ root
 	/dev	/
 	/fd	/
 	/prog	/
+	/prof	/
 	/net	/
 	/net.alt	/
 	/chan	/

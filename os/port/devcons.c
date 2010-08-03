@@ -304,6 +304,9 @@ _assert(char *fmt)
 	panic("assert failed: %s", fmt);
 }
 
+/*
+ * mainly for libmp
+ */
 void
 sysfatal(char *fmt, ...)
 {
@@ -313,7 +316,7 @@ sysfatal(char *fmt, ...)
 	va_start(arg, fmt);
 	vsnprint(buf, sizeof(buf), fmt, arg);
 	va_end(arg);
-	panic("sysfatal: %s", buf);
+	error(buf);
 }
 
 int
@@ -623,7 +626,6 @@ enum{
 	Qmemory,
 	Qmsec,
 	Qnull,
-	Qpin,
 	Qrandom,
 	Qnotquiterandom,
 	Qsysname,
@@ -647,7 +649,6 @@ static Dirtab consdir[]=
 	"memory",	{Qmemory},	0,		0444,
 	"msec",		{Qmsec},	NUMSIZE,	0444,
 	"null",		{Qnull},	0,		0666,
-	"pin",		{Qpin},		0,		0666,
 	"random",	{Qrandom},	0,		0444,
 	"notquiterandom", {Qnotquiterandom}, 0,	0444,
 	"sysname",	{Qsysname},	0,		0664,
@@ -953,12 +954,6 @@ consread(Chan *c, void *buf, long n, vlong offset)
 		else
 			return qread(kscanq, buf, n);
 
-	case Qpin:
-		p = "pin set";
-		if(up->env->pgrp->pin == Nopin)
-			p = "no pin";
-		return readstr(offset, buf, n, p);
-
 	case Qtime:
 		snprint(tmp, sizeof(tmp), "%.lld", (vlong)mseconds()*1000);
 		return readstr(offset, buf, n, tmp);
@@ -1142,16 +1137,6 @@ conswrite(Chan *c, void *va, long n, vlong offset)
 
 	case Qnull:
 		break;
-
-	case Qpin:
-		if(up->env->pgrp->pin != Nopin)
-			error("pin already set");
-		if(n >= sizeof(buf))
-			n = sizeof(buf)-1;
-		strncpy(buf, va, n);
-		buf[n] = '\0';
-		up->env->pgrp->pin = atoi(buf);
-		return n;
 
 	case Qsysname:
 		if(offset != 0)

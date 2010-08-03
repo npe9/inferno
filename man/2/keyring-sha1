@@ -123,7 +123,7 @@ A program to read a file and hash it using SHA might contain the following inner
 state: ref DigestState = nil;
 while((n := sys->read(fd, buf, len buf)) > 0)
 	state = kr->sha1(buf, n, nil, state);
-digest := array[kr->SHAdlen] of byte;
+digest := array[kr->SHA1dlen] of byte;
 kr->sha1(buf, 0, digest, state);
 .EE
 .SH SOURCE

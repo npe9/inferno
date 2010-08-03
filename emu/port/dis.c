@@ -84,12 +84,17 @@ nprog(void)
 	return n;
 }
 
+extern ulong heapcursize(void);
+extern int heapneedgc(ulong v);
+static ulong prevheapsize;
+static vlong prevgcpass;
+
 static void
 execatidle(void)
 {
 	int done;
 
-	if(tready(nil))
+	if(tready(nil) || !heapneedgc(prevheapsize) && osusectime()-prevgcpass < 10*1000*1000)
 		return;
 
 	gcidle++;
@@ -104,7 +109,12 @@ execatidle(void)
 		}
 		rungc(isched.head);
 		gcidlepass++;
-		osyield();
+		if(((ulong)gcidlepass&0xFF) == 0)
+			osyield();
+	}
+	if(gcruns()) {
+		prevheapsize = heapcursize();
+		prevgcpass = osusectime();
 	}
 	up->type = Interp;
 	delrunq(up->prog);
@@ -118,6 +128,14 @@ newprog(Prog *p, Modlink *m)
 	Osenv *on, *op;
 	static int pidnum;
 
+	if(p != nil){
+		if(p->group != nil)
+			p->flags |= p->group->flags & Pkilled;
+		if(p->kill != nil)
+			error(p->kill);
+		if(p->flags & Pkilled)
+			error("");
+	}
 	n = malloc(sizeof(Prog)+sizeof(Osenv));
 	if(n == 0){
 		if(p == nil)
@@ -230,10 +248,8 @@ delprog(Prog *p, char *msg)
 	}
 	p->state = 0xdeadbeef;
 	free(o->user);
-	if(p->killstr)
-		free(p->killstr);
-	if(p->exstr)
-		free(p->exstr);
+	free(p->killstr);
+	free(p->exstr);
 	free(p);
 }
 
@@ -552,20 +568,26 @@ killgrp(Prog *p, char *msg)
 	g = p->group;
 	if(g == nil || g->head == nil)
 		return 0;
+	while(g->flags & Pkilled){
+		release();
+		acquire();
+	}
 	npid = 0;
 	for(f = g->head; f != nil; f = f->grpnext)
 		if(f->group != g)
 			panic("killgrp");
 		else
 			npid++;
-	/* use pids not Prog* because state can change during killprog */
+	/* use pids not Prog* because state can change during killprog (eg, in delprog) */
 	pids = malloc(npid*sizeof(int));
 	if(pids == nil)
 		error(Enomem);
 	npid = 0;
 	for(f = g->head; f != nil; f = f->grpnext)
 		pids[npid++] = f->pid;
+	g->flags |= Pkilled;
 	if(waserror()) {
+		g->flags &= ~Pkilled;
 		free(pids);
 		nexterror();
 	}
@@ -575,6 +597,7 @@ killgrp(Prog *p, char *msg)
 			killprog(f, msg);
 	}
 	poperror();
+	g->flags &= ~Pkilled;
 	free(pids);
 	return 1;
 }

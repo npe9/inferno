@@ -2,7 +2,7 @@
 .SH NAME
 collabsrv \- multi-user collaboration
 .SH SYNOPSIS
-.B collabsrv/collabsrv
+.B collab/collabsrv
 [
 .BI "-f " keyfile
 ] [
@@ -11,11 +11,11 @@ collabsrv \- multi-user collaboration
 .I dir
 ]
 .PP
-.B collabsrv/servers/chatsrv
+.B collab/servers/chatsrv
 .PP
-.B collabsrv/servers/mpx
+.B collab/servers/mpx
 .PP
-.B collabsrv/servers/wbsrv
+.B collab/servers/wbsrv
 .SH DESCRIPTION
 .I Collabsrv
 listens on network address
@@ -29,7 +29,7 @@ The services are defined by the contents of directory
 (default:
 .BR /services/collab ).
 .I Collabsrv
-serves an authenticated Styx connection that exports the contents of
+serves an authenticated 9P connection that exports the contents of
 .IB dir /export
 (default:
 .BR /services/collab/export ).
@@ -57,10 +57,10 @@ all share that name space.
 The name space is determined by the service.
 .PP
 A client wishing to make use of the services must first
-.IR sys-dial (2)
+.IR dial (2)
 to connect to
 .IR collabsrv,
-and authenticate and mount the resulting Styx connection.
+and authenticate and mount the resulting 9P connection.
 It can do so using the
 .I mount
 command
@@ -136,12 +136,12 @@ names a Dis file implementing that service;
 path names are interpreted relative to
 .BR /services/collab ,
 but usually refer to files in
-.BR /dis/collabsrv/servers .
+.BR /dis/collab/servers .
 .PP
 Each
 .I collabsrv
 service is represented by a name space peculiar to that service.
-The interface to the service is therefore implemented by a service-specific Styx server
+The interface to the service is therefore implemented by a service-specific 9P server
 .RI ( disfile
 in the configuration file).
 Current services are described below.
@@ -321,14 +321,14 @@ active service directory
 .B /services/collab/services.cfg
 maps service names to modules
 .TP
-.B /dis/collabsrv/servers
+.B /dis/collab/servers
 service implementation modules
 .SH SOURCE
 .B /appl/collabsrv
 .br
-.B /appl/collabsrv/servers
+.B /appl/collab/servers
 .br
-.B /appl/collabsrv/lib
+.B /appl/collab/lib
 .SH SEE ALSO
 .IR collab (1),
 .IR collab-clients (1)

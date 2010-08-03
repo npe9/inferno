@@ -10,7 +10,7 @@ dbfs, rawdbfs \- simple database file system
 .br
 .B rawdbfs
 [
-.B -abcelrx
+.B -abcelx
 ]
 [
 .B -u
@@ -34,10 +34,9 @@ in
 .IR file .
 The
 .BR -a ,
-.BR -b ,
-.BR -c ,
+.B -b
 and
-.B -r
+.B -c
 options have the same meaning as the options accepted by
 .IR bind (1).
 If the
@@ -118,7 +117,7 @@ will remain the same between runs of
 .SH SEE ALSO
 .IR memfs (4),
 .IR ramfile (4),
-.IR wm-calendar (1)
+.IR calendar (1)
 .SH BUGS
 Write offsets are ignored, so the maximum amount of data
 that can be stored in a record is ATOMICIO bytes (i.e. 8K).

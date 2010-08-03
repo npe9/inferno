@@ -8,16 +8,32 @@ Linux
 			data2s
 			ksize
 			kstrip
-
 			limbo
 			mk
 			mkext
 			ndate
-			yacc
+			iyacc
 		include
 			+
 		lib
 	arm
+		bin
+		include
+			+
+		lib
+	power
+		bin
+			emu.new	0775	inferno	inferno	/Linux/power/bin/emu
+			data2c
+			mk
+			limbo
+			mkext
+			ndate
+			iyacc
+		include
+			+
+		lib
+	spim
 		bin
 		include
 			+

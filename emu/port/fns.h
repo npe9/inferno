@@ -47,6 +47,7 @@ Dev*		devbyname(char*);
 void		devpermcheck(char*, ulong, int);
 void		devremove(Chan*);
 int		devstat(Chan*, uchar*, int, Dirtab*, int, Devgen*);
+long		devtabread(Chan*, void*, long, vlong);
 int		devwstat(Chan*, uchar*, int);
 Chan*	devattach(int, char*);
 Block*	devbread(Chan*, long, ulong);
@@ -199,6 +200,14 @@ void		validwstatname(char*);
 void		vmachine(void*);
 int		walk(Chan**, char**, int, int, int*);
 void		cleanexit(int);
+void		objcache_init(void);
+objcache*	objcache_create(char *, ulong, ulong,
+				int (*)(void*, void*),
+				void (*)(void *, void *),
+				void *);
+void* 		objcache_alloc(objcache*, int);
+void		objcache_free(objcache*, void *);
+void		objcache_destroy(objcache*);
 void		oshostintr(Proc*);
 void		osenter(void);
 void		osleave(void);
@@ -240,8 +249,16 @@ int		kdirfwstat(int, Dir*);
 long		kdirread(int, Dir**);
 int		klisten(char*, char*);
 
+
 Cname*	addelem(Cname*, char*);
 void		cleancname(Cname*);
 void		cnameclose(Cname*);
+
+/* ksd.c */
+int 		ksd_key_create(void (*)(void *));
+void 		*ksd_getspecific(int key);
+void 		*ksd_setspecific(int key, void *val);
+
+void           vmstat_entry(char *, int *, Lock *);
 
 #pragma varargck argpos iprint 1

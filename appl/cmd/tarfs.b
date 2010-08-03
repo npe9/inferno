@@ -6,7 +6,6 @@ implement Tarfs;
 
 include "sys.m";
 	sys: Sys;
-	Qid: import Sys;
 
 include "draw.m";
 
@@ -33,8 +32,8 @@ File: adt {
 	x:	int;
 	name:	string;
 	mode:	int;
-	uid:	int;
-	gid:	int;
+	uid:	string;
+	gid:	string;
 	mtime:	int;
 	length:	big;
 	offset:	big;
@@ -47,6 +46,7 @@ File: adt {
 };
 
 tarfd: ref Sys->FD;
+pflag: int;
 root: ref File;
 files: array of ref File;
 pathgen: int;
@@ -86,6 +86,7 @@ init(nil: ref Draw->Context, args: list of string)
 		'a' =>	flags = Sys->MAFTER;
 		'b' =>	flags = Sys->MBEFORE;
 		'D' =>	styxservers->traceset(1);
+		'p' =>	pflag++;
 		* =>		arg->usage();
 		}
 	args = arg->argv();
@@ -104,8 +105,8 @@ init(nil: ref Draw->Context, args: list of string)
 	root.x = 0;
 	root.name = "/";
 	root.mode = Sys->DMDIR | 8r555;
-	root.uid = 0;
-	root.gid = 0;
+	root.uid = "0";
+	root.gid = "0";
 	root.length = big 0;
 	root.offset = big 0;
 	root.mtime = 0;
@@ -204,11 +205,17 @@ File.stat(f: self ref File): ref Sys->Dir
 {
 	d := ref sys->zerodir;
 	d.mode = f.mode;
+	if(pflag) {
+		d.mode &= 16rff<<24;
+		d.mode |= 8r444;
+		if(f.mode & Sys->DMDIR)
+			d.mode |= 8r111;
+	}
 	d.qid.path = big f.x;
 	d.qid.qtype = f.mode>>24;
 	d.name = f.name;
-	d.uid = string f.uid;
-	d.gid = string f.gid;
+	d.uid = f.uid;
+	d.gid = f.gid;
 	d.muid = d.uid;
 	d.length = f.length;
 	d.mtime = f.mtime;
@@ -229,10 +236,18 @@ split(s: string): (string, string)
 
 putfile(f: ref File)
 {
-	n := f.name;
+	orign := n := f.name;
 	df := root;
 	for(;;){
 		(d, rest) := split(n);
+		if(d == ".") {
+			n = rest;
+			continue;
+		}
+		if(d == "..") {
+			warn(sys->sprint("ignoring %q", orign));
+			return;
+		}
 		if(d == nil || rest == nil){
 			f.name = n;
 			break;
@@ -247,7 +262,8 @@ putfile(f: ref File)
 		n = rest;
 		df = g;
 	}
-	df.enter(f);
+	if(f.name != "." && f.name != "..")
+		df.enter(f);
 }
 
 navigator(navops: chan of ref Navop)
@@ -329,7 +345,7 @@ readtar(fd: ref Sys->FD): int
 		if(buf[0] == byte 0)
 			break;
 		offset += big Blocksize;
-		mode := octal(buf[Omode:Ouid]);
+		mode := int octal(buf[Omode:Ouid]);
 		linkflag := int buf[Olinkflag];
 		# don't use linkname
 		if((mode & 8r170000) == 8r40000)
@@ -352,15 +368,15 @@ readtar(fd: ref Sys->FD): int
 			f.name = f.name[:len f.name-1];
 		}
 		f.mode = mode;
-		f.uid = octal(buf[Ouid:Ogid]);
-		f.gid = octal(buf[Ogid:Osize]);
-		f.length = big octal(buf[Osize:Omtime]);
+		f.uid = string octal(buf[Ouid:Ogid]);
+		f.gid = string octal(buf[Ogid:Osize]);
+		f.length = octal(buf[Osize:Omtime]);
 		if(f.length < big 0)
 			error(sys->sprint("tar file size is negative: %s", f.name));
 		if(mode & Sys->DMDIR)
 			f.length = big 0;
-		f.mtime = octal(buf[Omtime:Ochksum]);
-		sum := octal(buf[Ochksum:Olinkflag]);
+		f.mtime = int octal(buf[Omtime:Ochksum]);
+		sum := int octal(buf[Ochksum:Olinkflag]);
 		if(sum != checksum(buf))
 			error(sys->sprint("checksum error on %s", f.name));
 		f.offset = offset;
@@ -368,6 +384,12 @@ readtar(fd: ref Sys->FD): int
 		v := int (f.length % big Blocksize);
 		if(v != 0)
 			offset += big (Blocksize-v);
+
+		if(ascii(buf[Omagic:Ouname]) == "ustar" && string buf[Omagic+6:Omagic+8] == "00") {
+			f.uid = ascii(buf[Ouname:Ogname]);
+			f.gid = ascii(buf[Ogname:Omajor]);
+		}
+			
 		putfile(f);
 	}
 	return 0;
@@ -384,16 +406,16 @@ ascii(b: array of byte): string
 	return string b[0:i];
 }
 
-octal(b: array of byte): int
+octal(b: array of byte): big
 {
-	v := 0;
+	v := big 0;
 	for(i := 0; i < len b && b[i] == byte ' '; i++)
 		;
 	for(; i < len b && b[i] != byte 0 && b[i] != byte ' '; i++){
 		c := int b[i];
 		if(!(c >= '0' && c <= '7'))
 			error(sys->sprint("bad octal value in tar header: %s (%c)", string b, c));
-		v = (v<<3) | (c-'0');
+		v = (v<<3) | big (c-'0');
 	}
 	return v;
 }
@@ -408,4 +430,9 @@ checksum(b: array of byte): int
 	for(; i < len b; i++)
 		c += int b[i];
 	return c;
+}
+
+warn(s: string)
+{
+	sys->fprint(sys->fildes(2), "%s\n", s);
 }

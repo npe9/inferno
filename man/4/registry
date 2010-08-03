@@ -25,7 +25,7 @@ where services come and go.
 It was originally intended to register Grid resources
 but has much wider use.
 .I Registry
-serves Styx on its standard input.
+serves 9P on its standard input.
 That can be mounted in the local name space (see below for an example),
 or served over a connection
 (eg, via
@@ -188,7 +188,7 @@ Start a registry that appears at the standard location for local registries,
 .BR /mnt/registry :
 .IP
 .EX
-mount -A ${pipe to ndb/register} /mnt/registry
+mount {ndb/registry} /mnt/registry
 .EE
 .PP
 Make that registry available to the network on authenticated connections:
