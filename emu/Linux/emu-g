@@ -15,13 +15,15 @@ dev
 	fs
 	cmd	cmd
 	indir
+	serve
 
-	ip	ipif-posix ipaux
+	ip	ipif6-posix ipaux
 	eia
 #	audio	audio
 	mem
 
 lib
+	avl
 	interp
 	math
 	keyring
@@ -55,8 +57,10 @@ port
 	exception
 	exportfs
 	inferno
+	ksd
 	latin1
 	main
+	objcache
 	parse
 	pgrp
 	print

@@ -92,6 +92,18 @@ int	ckleak;
 #define	ML(v, sz, pc)	if(CKLEAK && ckleak && v){ if(sz) fprint(2, "%lux %lux %lux\n", (ulong)v, (ulong)sz, (ulong)pc); else fprint(2, "%lux\n", (ulong)v); }
 
 int
+heapneedgc(ulong osize)
+{
+	return heapmem->cursize-osize > heapmem->chunk/8;
+}
+
+ulong
+heapcursize(void)
+{
+	return heapmem->cursize;
+}
+
+int
 memusehigh(void)
 {
 	return 	mainmem->cursize > mainmem->ressize ||

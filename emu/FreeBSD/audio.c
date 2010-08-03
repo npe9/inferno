@@ -207,7 +207,7 @@ audio_file_read(Chan *c, void *va, long count, vlong offset)
 	if(count % ba)
 		error(Ebadarg);
 
-	if(! audio_pause_in(audio_file_in, A_UnPause))
+	if(!audio_pause_in(audio_file_in, A_UnPause))
 		error(Eio);
 	
 	total = 0;

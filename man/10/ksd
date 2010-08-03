@@ -1,0 +1,31 @@
+.TH KSD 10.2
+.SH NAME
+ksd_key_create, ksd_getspecific, ksd_setspecific \- kproc-specific data
+.SH SYNOPSIS
+.ta \w'\fLvoid 'u
+.B
+int ksd_key_create(void)
+.PP
+.B
+void *ksd_getspecific(int key);
+.PP
+.B
+void *ksd_setspecific(int key, void *val);
+.B
+.SH DESCRIPTION
+.I ksd_key_create
+returns a key, an integer used to reference different data in each kproc.
+.PP
+.I ksd_getspecific
+returns the pointer associated with 
+.I key, 
+or nil if the key was never set in the current kproc.
+.PP
+.I ksd_setspecific
+maps
+.I key
+in the current kproc to 
+.I val
+and returns the old value at key.
+.SH SEE ALSO
+.IR kproc (10.2)

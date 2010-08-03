@@ -16,11 +16,11 @@ typedef struct Proto	Proto;
 typedef struct Conv	Conv;
 
 extern int		so_socket(int type);
-extern void		so_connect(int, unsigned long, unsigned short);
-extern void		so_getsockname(int, unsigned long*, unsigned short*);
-extern void		so_bind(int, int, unsigned long, unsigned short);
+extern void		so_connect(int, unsigned char*, unsigned short);
+extern void		so_getsockname(int, unsigned char*, unsigned short*);
+extern void		so_bind(int, int, unsigned char*, unsigned short);
 extern void		so_listen(int);
-extern int		so_accept(int, unsigned long*, unsigned short*);
+extern int		so_accept(int, unsigned char*, unsigned short*);
 extern int		so_getservbyname(char*, char*, char*);
 extern int		so_gethostbyname(char*, char**, int);
 extern int		so_gethostbyaddr(char*, char**, int);
@@ -57,6 +57,7 @@ extern uchar IPv4allrouter[IPaddrlen];
 extern uchar IPnoaddr[IPaddrlen];
 extern uchar v4prefix[IPaddrlen];
 extern uchar IPallbits[IPaddrlen];
+extern uchar v6Unspecified[IPaddrlen];
 
 extern void	arpadd(char*, char*, int);
 extern int	arpwrite(char*, int);

@@ -21,6 +21,8 @@ newproc(void)
 	p->env->syserrstr = p->env->errbuf1;
 	addprog(p);
 
+	p->ksd = mallocz(sizeof(void*) * NKEYS, 1);
+
 	return p;
 }
 

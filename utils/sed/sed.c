@@ -584,7 +584,6 @@ jtcommon:
 			if (ycomp(rep) == 0)
 				quit(CGMES, linebuf);
 			break;
-
 		}
 done:
 		if(++rep >= pend)
