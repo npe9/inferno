@@ -63,15 +63,14 @@ void (*auditmemloc)(char *, void *) = _auditmemloc;
 static void _poolfault(void *, char *, ulong);
 void (*poolfault)(void *, char *, ulong) = _poolfault;
 
-/*	non tracing
- *
+/*	non tracing */
+/*
 enum {
 	Npadlong	= 0,
 	MallocOffset = 0,
 	ReallocOffset = 0
 };
- *
- */
+*/
 
 /* tracing */
 enum {
@@ -79,7 +78,6 @@ enum {
 	MallocOffset = 0,
 	ReallocOffset = 1
 };
-
 enum {
 	Monitor = 1
 };
@@ -92,7 +90,7 @@ int	ckleak;
 #define	ML(v, sz, pc)	if(CKLEAK && ckleak && v){ if(sz) fprint(2, "%lux %lux %lux\n", (ulong)v, (ulong)sz, (ulong)pc); else fprint(2, "%lux\n", (ulong)v); }
 
 /* main pool magazines */
-#define MAG_ROUNDS		32
+#define MAG_ROUNDS		16
 #define NCACHES			7
 #define MAXMAG			256
 
@@ -724,6 +722,8 @@ kmalloc(size_t size)
                 Mag.fast_allocs[idx]++;
                 unlock(&Mag.lk[idx]);
                 n_fast_mallocs++;
+		if(Monitor)
+			assert((b->size - BHDRSIZE) >= size);
                 goto donealloc;
         }
 
@@ -777,6 +777,8 @@ malloc(size_t size)
 		Mag.fast_allocs[idx]++;
 		unlock(&Mag.lk[idx]);
 		n_fast_mallocs++;
+		if (Monitor)
+			assert((b->size - BHDRSIZE) >= size);
 		goto donealloc;
 	}
 
@@ -829,6 +831,8 @@ mallocz(ulong size, int clr)
                 Mag.fast_allocs[idx]++;
                 unlock(&Mag.lk[idx]);
                 n_fast_mallocs++;
+		if (Monitor)
+			assert((b->size - BHDRSIZE) >= size);
                 goto donealloc;
         }
 
