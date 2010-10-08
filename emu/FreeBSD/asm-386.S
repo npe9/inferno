@@ -105,3 +105,12 @@ _tas:
 	movl	4(%esp), %ecx
 	xchgl	%eax, 0(%ecx)
 	ret
+
+	.type   _xadd,@function
+	.globl  _xadd
+_xadd:
+	movl    8(%esp), %eax
+	movl    4(%esp), %ecx
+	lock xaddl   %eax, 0(%ecx)
+	ret
+

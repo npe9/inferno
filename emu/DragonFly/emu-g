@@ -12,12 +12,14 @@ dev
 	fs
 	cmd	cmd
 	indir
+	serve
 
-	ip	ipif ipaux
+	ip	ipif6-posix ipaux
 	eia
 	mem
 
 lib
+	avl
 	interp
 	math
 	keyring
@@ -53,6 +55,7 @@ port
 	exception
 	exportfs
 	inferno
+	ksd
 	latin1
 	main
 	parse

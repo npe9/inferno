@@ -7,7 +7,7 @@ OBJTYPE=386
 #Configurable parameters
 
 CONF=emu			#default configuration
-CONFLIST=emu
+CONFLIST=emu emu-g
 CLEANCONFLIST=
 
 INSTALLDIR=$ROOT/$SYSTARG/$OBJTYPE/bin	#path of directory where kernel is installed
@@ -20,6 +20,7 @@ INSTALLDIR=$ROOT/$SYSTARG/$OBJTYPE/bin	#path of directory where kernel is instal
 
 OBJ=\
 	asm-$OBJTYPE.$O\
+	os-$OBJTYPE.$O\
 	os.$O\
 	$CONF.root.$O\
 	lock.$O\
@@ -29,7 +30,7 @@ OBJ=\
 HFILES=\
 
 CFLAGS='-DROOT="'$ROOT'"' -DEMU -I. -I../port -I$ROOT/$SYSTARG/$OBJTYPE/include -I$ROOT/include -I$ROOT/libinterp $CTHREADFLAGS $CFLAGS $EMUOPTIONS
-SYSLIBS= -lm 
+SYSLIBS= -lm -lX11 -lXext
 KERNDATE=`{$NDATE}
 
 default:V:	$O.$CONF

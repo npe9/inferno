@@ -18,6 +18,7 @@ csquery cs
 dhcp dhcp
 dns dns
 dnsquery dns
+dsagen	ai2key
 fpgaload fpgaload
 ftl ftl
 getauthinfo getauthinfo
@@ -42,6 +43,7 @@ prep prep
 rdbgsrv rdbgsrv
 register register
 rip rip
+rsagen	ai2key
 rstyxd rstyxd
 shutdown shutdown
 countersigner signer

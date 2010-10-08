@@ -14,6 +14,7 @@ dev
 	cmd	cmd
 	indir
 #	sign
+	serve
 
 	draw	win
 	pointer
@@ -25,6 +26,7 @@ dev
 #	ip and eia are simply bound in from Plan 9
 
 lib
+	avl
 	interp
 	tk
 	freetype
@@ -71,6 +73,7 @@ port
 	exportfs
 	exptab
 	inferno
+#	ksd
 	latin1
 	main
 	parse

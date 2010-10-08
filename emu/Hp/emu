@@ -13,6 +13,7 @@ dev
 	fs
 	cmd	cmd
 	indir
+	serve
 
 	draw win-x11a
 	pointer
@@ -25,6 +26,7 @@ dev
 	mem
 
 lib
+	avl
 	interp
 	tk
 	freetype
@@ -70,6 +72,7 @@ port
 	exception
 	exportfs
 	inferno
+	ksd
 	latin1
 	main
 	parse

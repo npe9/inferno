@@ -63,15 +63,14 @@ void (*auditmemloc)(char *, void *) = _auditmemloc;
 static void _poolfault(void *, char *, ulong);
 void (*poolfault)(void *, char *, ulong) = _poolfault;
 
-/*	non tracing
- *
+/*	non tracing */
+/*
 enum {
 	Npadlong	= 0,
 	MallocOffset = 0,
 	ReallocOffset = 0
 };
- *
- */
+*/
 
 /* tracing */
 enum {
@@ -79,7 +78,6 @@ enum {
 	MallocOffset = 0,
 	ReallocOffset = 1
 };
-
 enum {
 	Monitor = 1
 };
@@ -90,6 +88,90 @@ void	(*memmonitor)(int, ulong, ulong, ulong) = nil;
 #define CKLEAK	0
 int	ckleak;
 #define	ML(v, sz, pc)	if(CKLEAK && ckleak && v){ if(sz) fprint(2, "%lux %lux %lux\n", (ulong)v, (ulong)sz, (ulong)pc); else fprint(2, "%lux\n", (ulong)v); }
+
+/* main pool magazines */
+#define MAG_ROUNDS		16
+#define NCACHES			7
+#define MAXMAG			256
+
+struct blkcache {
+	Bhdr *blk[MAG_ROUNDS];
+};
+
+struct magazine {
+	int idx[NCACHES];
+	struct blkcache c[NCACHES];
+	Lock lk[NCACHES];
+	int fast_allocs[NCACHES];
+	int fast_frees[NCACHES];
+};
+
+static struct magazine Mag;
+
+static int
+size2idx(size_t size)
+{
+	if (size < 32)
+		return 0;
+	if (size < 64)
+		return 1;
+	if (size < 96)
+		return 2;
+	if (size < 128)
+		return 3;
+	if (size < 160)
+		return 4;
+	if (size < 192)
+		return 5;
+	if (size < 256)
+		return 6;
+	return -1;
+}
+
+/* main malloc vmstats */
+Lock stats_initlock;
+static int stats_init = 0;
+
+static int n_mallocs = 0;
+static int n_fast_mallocs = 0;
+static int n_frees = 0;
+static int n_fast_frees = 0;
+
+static void
+alloc_statsinit(void)
+{
+	if (stats_init == 1)
+		return;
+
+	lock(&stats_initlock);
+	do {
+		if (stats_init == 1)
+			break;
+
+		vmstat_entry("vm.alloc.main.n_mallocs", &n_mallocs, nil);
+		vmstat_entry("vm.alloc.main.n_fast_mallocs", &n_fast_mallocs, 
+			     nil);
+		vmstat_entry("vm.alloc.main.n_frees", &n_frees, nil);
+		vmstat_entry("vm.alloc.main.n_fast_frees", &n_fast_frees, nil);	
+
+		stats_init = 1;
+	} while (0);
+	unlock(&stats_initlock);
+}
+
+/* */
+
+int
+heapneedgc(ulong osize)
+{
+	return heapmem->cursize-osize > heapmem->chunk/8;
+}
+
+ulong
+heapcursize(void)
+{
+	return heapmem->cursize;
+}
 
 int
 memusehigh(void)
@@ -593,6 +675,8 @@ smalloc(size_t size)
 {
 	void *v;
 
+	alloc_statsinit();
+
 	for(;;){
 		v = malloc(size);
 		if(v != nil)
@@ -612,9 +696,42 @@ void*
 kmalloc(size_t size)
 {
 	void *v;
+	int blksize, i, idx;
+	Bhdr *b;
 
+	alloc_statsinit();
+
+        blksize = size + (Npadlong * sizeof(ulong)) + BHDRSIZE +
+                  mainmem->quanta;
+
+        if (blksize < MAXMAG) {
+                idx = size2idx(blksize);
+                if (idx == -1)
+                        goto doalloc;
+
+                lock(&Mag.lk[idx]);
+                i = Mag.idx[idx];
+                if (i == 0) {
+                        unlock(&Mag.lk[idx]);
+                        goto doalloc;
+                }
+
+                Mag.idx[idx]--;
+                b = Mag.c[idx].blk[i - 1];
+                v = B2D(b);
+                Mag.fast_allocs[idx]++;
+                unlock(&Mag.lk[idx]);
+                n_fast_mallocs++;
+		if(Monitor)
+			assert((b->size - BHDRSIZE) >= size);
+                goto donealloc;
+        }
+
+doalloc:
 	v = dopoolalloc(mainmem, size+Npadlong*sizeof(ulong), getcallerpc(&size));
+donealloc:
 	if(v != nil){
+		n_mallocs++;
 		ML(v, size, getcallerpc(&size));
 		if(Npadlong){
 			v = (ulong*)v+Npadlong;
@@ -633,9 +750,43 @@ void*
 malloc(size_t size)
 {
 	void *v;
+	int blksize;
+	int i, idx;
+	Bhdr *b;
 
+	alloc_statsinit();
+
+	blksize = size + (Npadlong * sizeof(ulong)) + BHDRSIZE +
+		  mainmem->quanta;
+
+	if (blksize < MAXMAG) {
+		idx = size2idx(blksize);
+		if (idx == -1)
+			goto doalloc;		
+
+		lock(&Mag.lk[idx]);
+		i = Mag.idx[idx];
+		if (i == 0) {
+			unlock(&Mag.lk[idx]);
+			goto doalloc;
+		}
+
+		Mag.idx[idx]--;
+		b = Mag.c[idx].blk[i - 1];
+		v = B2D(b);
+		Mag.fast_allocs[idx]++;
+		unlock(&Mag.lk[idx]);
+		n_fast_mallocs++;
+		if (Monitor)
+			assert((b->size - BHDRSIZE) >= size);
+		goto donealloc;
+	}
+
+doalloc:
 	v = poolalloc(mainmem, size+Npadlong*sizeof(ulong));
+donealloc:
 	if(v != nil){
+		n_mallocs++;
 		ML(v, size, getcallerpc(&size));
 		if(Npadlong){
 			v = (ulong*)v+Npadlong;
@@ -653,9 +804,43 @@ void*
 mallocz(ulong size, int clr)
 {
 	void *v;
+	int blksize;
+	int i, idx;
+	Bhdr *b;
 
+	alloc_statsinit();
+
+        blksize = size + (Npadlong * sizeof(ulong)) + BHDRSIZE +
+                  mainmem->quanta;
+
+        if (blksize < MAXMAG) {
+                idx = size2idx(blksize);
+                if (idx == -1)
+                        goto doalloc;
+
+                lock(&Mag.lk[idx]);
+                i = Mag.idx[idx];
+                if (i == 0) {
+                        unlock(&Mag.lk[idx]);
+                        goto doalloc;
+                }
+
+                Mag.idx[idx]--;
+                b = Mag.c[idx].blk[i - 1];
+                v = B2D(b);
+                Mag.fast_allocs[idx]++;
+                unlock(&Mag.lk[idx]);
+                n_fast_mallocs++;
+		if (Monitor)
+			assert((b->size - BHDRSIZE) >= size);
+                goto donealloc;
+        }
+
+doalloc:
 	v = poolalloc(mainmem, size+Npadlong*sizeof(ulong));
+donealloc:
 	if(v != nil){
+		n_mallocs++;
 		ML(v, size, getcallerpc(&size));
 		if(Npadlong){
 			v = (ulong*)v+Npadlong;
@@ -674,6 +859,10 @@ void
 free(void *v)
 {
 	Bhdr *b;
+	int bs, idx;
+	int i, j;
+
+	alloc_statsinit();
 
 	if(v != nil) {
 		if(Npadlong)
@@ -681,7 +870,33 @@ free(void *v)
 		D2B(b, v);
 		ML(v, 0, 0);
 		MM(1<<8|0, getcallerpc(&v), (ulong)((ulong*)v+Npadlong), b->size);
+		bs = b->size - BHDRSIZE;
+		if(bs < MAXMAG) {
+			idx = size2idx(bs);
+			if (idx == -1)
+				goto dofree;
+
+			lock(&Mag.lk[idx]);
+			j = Mag.idx[idx];
+			if (j == MAG_ROUNDS) {
+				unlock(&Mag.lk[idx]);
+				goto dofree;
+			}
+
+			Mag.idx[idx]++;
+			Mag.c[idx].blk[j] = b;
+			Mag.fast_frees[idx]++;
+			unlock(&Mag.lk[idx]);
+
+			n_frees++;
+			n_fast_frees++;
+			return;
+		}
+
+dofree:
 		poolfree(mainmem, v);
+
+		n_frees++;
 	}
 }
 
@@ -689,6 +904,8 @@ void*
 realloc(void *v, size_t size)
 {
 	void *nv;
+
+	alloc_statsinit();
 
 	if(size == 0)
 		return malloc(size);	/* temporary change until realloc calls can be checked */
@@ -764,6 +981,8 @@ msize(void *v)
 void*
 calloc(size_t n, size_t szelem)
 {
+	alloc_statsinit();
+
 	return malloc(n*szelem);
 }
 

@@ -84,12 +84,17 @@ nprog(void)
 	return n;
 }
 
+extern ulong heapcursize(void);
+extern int heapneedgc(ulong v);
+static ulong prevheapsize;
+static vlong prevgcpass;
+
 static void
 execatidle(void)
 {
 	int done;
 
-	if(tready(nil))
+	if(tready(nil) || !heapneedgc(prevheapsize) && osusectime()-prevgcpass < 10*1000*1000)
 		return;
 
 	gcidle++;
@@ -106,6 +111,10 @@ execatidle(void)
 		gcidlepass++;
 		if(((ulong)gcidlepass&0xFF) == 0)
 			osyield();
+	}
+	if(gcruns()) {
+		prevheapsize = heapcursize();
+		prevgcpass = osusectime();
 	}
 	up->type = Interp;
 	delrunq(up->prog);
