@@ -451,6 +451,10 @@ mntwalk(Chan *c, Chan *nc, char **name, int nname)
 	for(i=0; i<wq->nqid; i++)
 		wq->qid[i] = r->reply.wqid[i];
 
+	/* propagate CCACHE flag */
+	if(c->flag & CCACHE)
+		nc->flag |= CCACHE;
+
     Return:
 	poperror();
 	mntfree(r);

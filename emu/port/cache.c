@@ -2,7 +2,7 @@
 #include "fns.h"
 
 /*
- * no cache in hosted mode
+ * 9P file cache
  */
 void
 cinit(void)
@@ -12,7 +12,7 @@ cinit(void)
 void
 copen(Chan *c)
 {
-	c->flag &= ~CCACHE;
+	USED(c);
 }
 
 int
