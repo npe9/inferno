@@ -9,7 +9,6 @@ typedef struct Egrp	Egrp;
 typedef struct Evalue	Evalue;
 typedef struct Fgrp	Fgrp;
 typedef struct Mount	Mount;
-typedef struct Mntcache Mntcache;
 typedef struct Mntparam Mntparam;
 typedef struct Mntrpc	Mntrpc;
 typedef struct Mntwalk	Mntwalk;
@@ -114,7 +113,6 @@ struct Chan
 	Lock	l;
 	Ref	r;
 	Chan*	next;			/* allocation */
-	Chan*	link;
 	vlong	offset;			/* in file */
 	ushort	type;
 	ulong	dev;
@@ -129,7 +127,6 @@ struct Chan
 	int	uri;			/* union read index */
 	int	dri;			/* devdirread index */
 	ulong	mountid;
-	Mntcache *mcp;			/* Mount cache pointer */
 	Mnt		*mux;		/* Mnt for clients using me for messages */
 	void*	aux;		/* device specific data */
 	Chan*	mchan;			/* channel to mounted server */

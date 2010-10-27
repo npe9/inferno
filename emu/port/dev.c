@@ -111,7 +111,6 @@ devclone(Chan *c)
 	nc->mountid = c->mountid;
 	nc->aux = c->aux;
 	nc->mqid = c->mqid;
-	nc->mcp = c->mcp;
 	return nc;
 }
 

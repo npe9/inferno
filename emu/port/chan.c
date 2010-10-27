@@ -155,7 +155,6 @@ newchan(void)
 			error(Enomem);
 		lock(&chanalloc.l);
 		c->fid = ++chanalloc.fid;
-		c->link = chanalloc.list;
 		chanalloc.list = c;
 		n_chans++;
 		n_active_chans++;
@@ -175,7 +174,6 @@ newchan(void)
 	c->dri = 0;
 	c->aux = 0;
 	c->mchan = 0;
-	c->mcp = 0;
 	c->mux = 0;
 	c->mqid.path = 0;
 	c->mqid.vers = 0;

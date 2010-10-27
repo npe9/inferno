@@ -802,7 +802,7 @@ int2flag(int flag, char *s)
 	if(flag & MCREATE)
 		*s++ = 'c';
 	if(flag & MCACHE)
-		*s++ = 'C';
+		*s++ = 'j';
 	*s = '\0';
 }
 
