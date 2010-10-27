@@ -4,7 +4,6 @@
 
 static int n_chans = 0;
 static int n_active_chans = 0;
-static int stats_init = 0;
 
 char*
 c2name(Chan *c)		/* DEBUGGING */
@@ -135,12 +134,6 @@ newchan(void)
 {
 	Chan *c;
 
-	if (stats_init == 0) {
-		stats_init = 1;
-		vmstat_entry("vm.n_chans", &n_chans, &chanalloc.l);
-		vmstat_entry("vm.n_active_chans", &n_active_chans, &chanalloc.l);
-	}
-
 	lock(&chanalloc.l);
 	c = chanalloc.free;
 	if(c != 0) {
@@ -179,6 +172,9 @@ newchan(void)
 	c->mqid.vers = 0;
 	c->mqid.type = 0;
 	c->name = 0;
+	c->deferclose = 0;
+	c->dclosem = nil;
+	c->dcloser = nil;
 	return c;
 }
 
@@ -296,7 +292,73 @@ cclose(Chan *c)
 		poperror();
 	}
 
-	chanfree(c);
+	if (!c->deferclose)
+		chanfree(c);
+}
+
+struct {
+	Chan *head;
+	Chan *tail;
+	int nqueued;
+	int peak_nqueued;
+	Lock l;
+	Rendez r;
+} clunkq;
+void closeproc(void *);
+
+void
+cdeferclose(Mnt *m, Mntrpc *r, Chan *c)
+{
+	lock(&clunkq.l);
+	clunkq.nqueued++;
+	if (clunkq.nqueued > clunkq.peak_nqueued)
+		clunkq.peak_nqueued = clunkq.nqueued;
+	c->next = nil;
+	if(clunkq.head)
+		clunkq.tail->next = c;
+	else
+		clunkq.head = c;
+	clunkq.tail = c;
+	unlock(&clunkq.l);
+
+	Wakeup(&clunkq.r);
+}
+
+int
+checkclunkq(void *arg)
+{
+	int cnt;
+
+	lock(&clunkq.l);
+	cnt = clunkq.nqueued;
+	unlock(&clunkq.l);
+
+	return (cnt > 0) ? 1 : 0; 
+}
+
+void
+closeproc(void *arg)
+{
+	Chan *c;
+
+	for (;;) {
+		Sleep(&clunkq.r, checkclunkq, arg);
+		lock(&clunkq.l);
+
+		if (clunkq.head == nil) {
+			unlock(&clunkq.l);
+			continue;
+		}
+		c = clunkq.head;
+		clunkq.head = c->next;
+		clunkq.nqueued--;
+		unlock(&clunkq.l);
+
+		/* From devmnt */
+		mountrpc(c->dclosem, c->dcloser);
+		mntfree(c->dcloser);
+		chanfree(c);
+	}
 }
 
 /*
@@ -1389,3 +1451,15 @@ putmhead(Mhead *m)
 		free(m);
 	}
 }
+
+void 
+chaninit(void)
+{
+	vmstat_entry("vm.n_chans", &n_chans, &chanalloc.l);
+	vmstat_entry("vm.n_active_chans", &n_active_chans, &chanalloc.l);
+	vmstat_entry("vm.clunkq_nqueued", &clunkq.nqueued, &clunkq.l);
+	vmstat_entry("vm.clunkq_peak_nqueued", &clunkq.peak_nqueued, &clunkq.l);
+
+	kproc("closeproc", closeproc, nil, 0);
+}
+

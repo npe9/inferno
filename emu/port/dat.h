@@ -127,7 +127,11 @@ struct Chan
 	int	uri;			/* union read index */
 	int	dri;			/* devdirread index */
 	ulong	mountid;
-	Mnt		*mux;		/* Mnt for clients using me for messages */
+	int	deferclose;	/* deferred close via devtab->close() */
+	Mnt 	*dclosem;
+	Mntrpc	*dcloser;
+
+	Mnt	*mux;		/* Mnt for clients using me for messages */
 	void*	aux;		/* device specific data */
 	Chan*	mchan;			/* channel to mounted server */
 	Qid	mqid;			/* qid of root of mount point */

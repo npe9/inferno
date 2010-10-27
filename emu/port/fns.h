@@ -17,6 +17,7 @@ void		cclose(Chan*);
 void		chandevinit(void);
 void		chanfree(Chan*);
 Dir*		chandirstat(Chan*);
+void		chaninit(void);
 void		cinit(void);
 char*	clipread(void);
 int		clipwrite(char*);

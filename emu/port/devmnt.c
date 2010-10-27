@@ -86,6 +86,7 @@ mntinit(void)
 /*	fmtinstall('D', dirfmt); */
 /*	fmtinstall('M', dirmodefmt);  */
 
+	chaninit();
 	cinit();
 }
 
@@ -545,7 +546,7 @@ mntcreate(Chan *c, char *name, int omode, ulong perm)
 }
 
 static void
-mntclunk(Chan *c, int t)
+mntclunk(Chan *c, int t, int deferable)
 {
 	Mnt *m;
 	Mntrpc *r;
@@ -559,8 +560,16 @@ mntclunk(Chan *c, int t)
 
 	r->request.type = t;
 	r->request.fid = c->fid;
-	mountrpc(m, r);
-	mntfree(r);
+	if ((c->flag & CCACHE) && !(c->flag & ORCLOSE) && deferable) {
+		c->deferclose = 1;
+		c->dclosem = m;
+		c->dcloser = r;
+		cdeferclose(m, r, c);
+	} else {
+		c->deferclose = 0;
+		mountrpc(m, r);
+		mntfree(r);
+	}
 	poperror();
 }
 
@@ -605,13 +614,13 @@ mntpntfree(Mnt *m)
 static void
 mntclose(Chan *c)
 {
-	mntclunk(c, Tclunk);
+	mntclunk(c, Tclunk, 1);
 }
 
 static void
 mntremove(Chan *c)
 {
-	mntclunk(c, Tremove);
+	mntclunk(c, Tremove, 0);
 }
 
 static int
