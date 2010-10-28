@@ -261,21 +261,38 @@ oshostintr(Proc *p)
 	kill(p->sigid, SIGUSR1);
 }
 
+// osblock and osready
+//
+// osblock blocks an Inferno kproc until it is woken by a corresponding
+// osready. We use the per-process os field (p->os) as a three-state counter
+// to avoid lost osready() calls; block decrements this counter, while
+// ready increments it. On the 0 -> -1 transition in block, we use
+// DragonFly's umtx_sleep syscall to wait for the counter to be 0 again.
+// On a 1 -> 0 transition in block, we 'consume' a ready event and return.
+// In ready, on the 0 -> 1 transition, we return, while we use umtx_wakeup
+// on a -1 -> 0 transition.
+//
 void
 osblock(void)
 {
-	sigset_t mask;
+	int val;
 
-	sigprocmask(SIG_SETMASK, NULL, &mask);
-	sigdelset(&mask, SIGUSR2);
-	sigsuspend(&mask);
+	val = _xadd(&up->os, -1);
+	if (val == 1)
+		return;
+
+	while((int) up->os == -1)
+		umtx_sleep(&up->os, -1, 1000 * 5);
 }
 
 void
 osready(Proc *p)
 {
-	if(kill(p->sigid, SIGUSR2) < 0)
-		fprint(2, "emu: osready failed: pid %d: %s\n", p->sigid, strerror(errno));
+	int val;
+
+	val = _xadd(&p->os, 1);
+	if (val == -1)
+		umtx_wakeup(&p->os, 1);
 }
 
 void

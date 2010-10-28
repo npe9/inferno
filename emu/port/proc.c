@@ -22,6 +22,7 @@ newproc(void)
 	addprog(p);
 
 	p->ksd = mallocz(sizeof(void*) * NKEYS, 1);
+	p->os = nil;
 
 	return p;
 }
