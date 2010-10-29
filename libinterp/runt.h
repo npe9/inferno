@@ -1,3 +1,5 @@
+#pragma hjdicks x4
+#pragma pack x4
 typedef struct Sys_Qid Sys_Qid;
 typedef struct Sys_Dir Sys_Dir;
 typedef struct Sys_FD Sys_FD;
@@ -3998,3 +4000,5 @@ struct F_Face_settransform
 #define Freetype_PATH "$Freetype"
 #define Freetype_STYLE_ITALIC 1
 #define Freetype_STYLE_BOLD 2
+#pragma pack off
+#pragma hjdicks off

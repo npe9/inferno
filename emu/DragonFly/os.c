@@ -282,7 +282,7 @@ osblock(void)
 		return;
 
 	while((int) up->os == -1)
-		umtx_sleep(&up->os, -1, 1000 * 5);
+		umtx_sleep(&up->os, -1, 0);
 }
 
 void
