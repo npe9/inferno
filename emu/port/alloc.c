@@ -90,7 +90,7 @@ int	ckleak;
 #define	ML(v, sz, pc)	if(CKLEAK && ckleak && v){ if(sz) fprint(2, "%lux %lux %lux\n", (ulong)v, (ulong)sz, (ulong)pc); else fprint(2, "%lux\n", (ulong)v); }
 
 /* main pool magazines */
-#define MAG_ROUNDS		16
+#define MAG_ROUNDS		64
 #define NCACHES			7
 #define MAXMAG			256
 

@@ -30,6 +30,8 @@ lib
 #	freetype
 	math
 #	draw
+	avl
+	nmea
 
 #	memlayer
 #	memdraw
