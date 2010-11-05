@@ -1,0 +1,18 @@
+<../mkconfig
+
+LIB=libnmea.a
+
+OFILES=	\
+	context.$O\
+	generate.$O\
+	generator.$O\
+	gmath.$O\
+	info.$O\
+	parse.$O\
+	parser.$O\
+	sentence.$O\
+	time.$O\
+	tok.$O\
+
+<$ROOT/mkfiles/mksyslib-$SHELLTYPE
+
