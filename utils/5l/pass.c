@@ -131,7 +131,7 @@ brchain(Prog *p)
 	int i;
 
 	for(i=0; i<20; i++) {
-		if(p == P || p->as != AB)
+		if(p == P || p->as != AB || p->mark & NOSCHED)
 			return p;
 		p = p->cond;
 	}
@@ -193,6 +193,17 @@ loop:
 		curtext = p;
 	if(a == AB) {
 		q = p->cond;
+		if((p->mark&NOSCHED) || q && (q->mark&NOSCHED)){
+			p->mark |= FOLL;
+			lastp->link = p;
+			lastp = p;
+			p = p->link;
+			xfol(p);
+			p = q;
+			if(p && !(p->mark & FOLL))
+				goto loop;
+			return;
+		}		
 		if(q != P) {
 			p->mark |= FOLL;
 			p = q;
@@ -202,7 +213,7 @@ loop:
 	}
 	if(p->mark & FOLL) {
 		for(i=0,q=p; i<4; i++,q=q->link) {
-			if(q == lastp)
+			if(q == lastp || (q->mark&NOSCHED))
 				break;
 			a = q->as;
 			if(a == ANOP) {
@@ -257,6 +268,10 @@ loop:
 	lastp->link = p;
 	lastp = p;
 	if(a == AB || (a == ARET && p->scond == 14) || a == ARFE){
+		if(p->mark & NOSCHED){
+			p = p->link;
+			goto loop;
+		} 					
 		return;
 	}
 	if(p->cond != P)

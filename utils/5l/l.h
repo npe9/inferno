@@ -213,6 +213,7 @@ enum
 	FOLL		= 1<<0,
 	LABEL		= 1<<1,
 	LEAF		= 1<<2,
+	NOSCHED = 1<<7,
 
 	BIG		= (1<<12)-4,
 	STRINGSZ	= 200,
