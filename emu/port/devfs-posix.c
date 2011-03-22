@@ -13,6 +13,8 @@
 #include	<utime.h>
 #include	<dirent.h>
 #include	<stdio.h>
+#include	<sys/socket.h>
+#include	<sys/un.h>
 #define	__EXTENSIONS__
 #undef	getwd
 #include	<unistd.h>
@@ -34,9 +36,11 @@ struct Fsinfo
 	char*	spec;
 	Cname*	name;	/* Unix's name for file */
 	Qid	rootqid;		/* Plan 9's qid for Inferno's root */
+	int	issocket;
 };
 
 #define	FS(c)	((Fsinfo*)(c)->aux)
+
 
 enum
 {
@@ -240,6 +244,36 @@ fsstat(Chan *c, uchar *dp, int n)
 	return n;
 }
 
+static int
+opensocket(Fsinfo *fi, char *path)
+{
+	int fd;
+	struct stat st;
+	struct sockaddr_un su;
+	
+	if(stat(path, &st) < 0)
+		return -1;
+	if(!S_ISSOCK(st.st_mode))
+		return -1;
+	memset(&su, 0, sizeof su);
+	su.sun_family = AF_UNIX;
+	if(strlen(path)+1 > sizeof su.sun_path){
+		errno = ENAMETOOLONG;
+		return -1;
+	}
+	strcpy(su.sun_path, path);
+	if((fd = socket(AF_UNIX, SOCK_STREAM, 0)) < 0)
+		return -1;
+	if(connect(fd, (struct sockaddr*)&su, sizeof su) < 0){
+		close(fd);
+		return -1;
+	}
+	fi->fd = fd;
+	fi->issocket = 1;
+	return 0;
+}
+
+
 static Chan*
 fsopen(Chan *c, int mode)
 {
@@ -285,7 +319,7 @@ fsopen(Chan *c, int mode)
 		if(mode & OTRUNC)
 			m |= O_TRUNC;
 		FS(c)->fd = open(FS(c)->name->s, m, 0666);
-		if(FS(c)->fd < 0)
+		if(FS(c)->fd < 0 &&  opensocket(FS(c), FS(c)->name->s) < 0)
 			oserror();
 	}
 
@@ -400,7 +434,10 @@ fsread(Chan *c, void *va, long n, vlong offset)
 		poperror();
 		qunlock(&FS(c)->oq);
 	}else{
-		r = pread(FS(c)->fd, va, n, offset);
+		if(FS(c)->issocket)
+			r = read(FS(c)->fd, va, n);
+		else
+			r = pread(FS(c)->fd, va, n, offset);
 		if(r < 0){
 			if(errno == ESPIPE || errno == EPIPE){
 				r = read(FS(c)->fd, va, n);
